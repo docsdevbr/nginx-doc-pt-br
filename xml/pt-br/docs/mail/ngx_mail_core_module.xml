@@ -1,0 +1,467 @@
+<?xml version="1.0"?>
+
+<!--
+  Copyright (C) 2006, 2007 Anton Yuzhaninov
+  Copyright (C) Nginx, Inc.
+  -->
+
+<!DOCTYPE module SYSTEM "../../../../dtd/module.dtd">
+
+<module name="Module ngx_mail_core_module"
+        link="/en/docs/mail/ngx_mail_core_module.html"
+        lang="en"
+        rev="21">
+
+<section id="summary">
+
+<para>
+This module is not built by default, it should be
+enabled with
+the <literal>--with-mail</literal> configuration parameter.
+</para>
+
+</section>
+
+
+<section id="example" name="Example Configuration">
+
+<para>
+<example>
+worker_processes auto;
+
+error_log /var/log/nginx/error.log info;
+
+events {
+    worker_connections  1024;
+}
+
+mail {
+    server_name       mail.example.com;
+    auth_http         localhost:9000/cgi-bin/nginxauth.cgi;
+
+    imap_capabilities IMAP4rev1 UIDPLUS IDLE LITERAL+ QUOTA;
+
+    pop3_auth         plain apop cram-md5;
+    pop3_capabilities LAST TOP USER PIPELINING UIDL;
+
+    smtp_auth         login plain cram-md5;
+    smtp_capabilities "SIZE 10485760" ENHANCEDSTATUSCODES 8BITMIME DSN;
+    xclient           off;
+
+    server {
+        listen   25;
+        protocol smtp;
+    }
+    server {
+        listen   110;
+        protocol pop3;
+        proxy_pass_error_message on;
+    }
+    server {
+        listen   143;
+        protocol imap;
+    }
+    server {
+        listen   587;
+        protocol smtp;
+    }
+}
+</example>
+</para>
+
+</section>
+
+
+<section id="directives" name="Directives">
+
+<directive name="listen">
+<syntax>
+    <value>address</value>:<value>port</value>
+    [<literal>ssl</literal>]
+    [<literal>proxy_protocol</literal>]
+    [<literal>backlog</literal>=<value>number</value>]
+    [<literal>rcvbuf</literal>=<value>size</value>]
+    [<literal>sndbuf</literal>=<value>size</value>]
+    [<literal>bind</literal>]
+    [<literal>ipv6only</literal>=<literal>on</literal>|<literal>off</literal>]
+    [<literal>so_keepalive</literal>=<literal>on</literal>|<literal>off</literal>|[<value>keepidle</value>]:[<value>keepintvl</value>]:[<value>keepcnt</value>]]</syntax>
+<default/>
+<context>server</context>
+
+<para>
+Sets the <value>address</value> and <value>port</value> for the socket
+on which the server will accept requests.
+It is possible to specify just the port.
+The address can also be a hostname, for example:
+<example>
+listen 127.0.0.1:110;
+listen *:110;
+listen 110;     # same as *:110
+listen localhost:110;
+</example>
+IPv6 addresses (0.7.58) are specified in square brackets:
+<example>
+listen [::1]:110;
+listen [::]:110;
+</example>
+UNIX-domain sockets (1.3.5) are specified with the “<literal>unix:</literal>”
+prefix:
+<example>
+listen unix:/var/run/nginx.sock;
+</example>
+
+</para>
+
+<para>
+Different servers must listen on different
+<value>address</value>:<value>port</value> pairs.
+</para>
+
+<para>
+The <literal>ssl</literal> parameter allows specifying that all
+connections accepted on this port should work in SSL mode.
+</para>
+
+<para id="proxy_protocol">
+The <literal>proxy_protocol</literal> parameter (1.19.8)
+allows specifying that all connections accepted on this port should use the
+<link url="http://www.haproxy.org/download/1.8/doc/proxy-protocol.txt">PROXY
+protocol</link>.
+Obtained information is passed to the
+<link doc="ngx_mail_auth_http_module.xml" id="proxy_protocol">authentication server</link>
+and can be used to
+<link doc="ngx_mail_realip_module.xml">change the client address</link>.
+</para>
+
+<para>
+The <literal>listen</literal> directive
+can have several additional parameters specific to socket-related system calls.
+<list type="tag">
+
+<tag-name>
+<literal>backlog</literal>=<value>number</value>
+</tag-name>
+<tag-desc>
+sets the <literal>backlog</literal> parameter in the
+<c-func>listen</c-func> call that limits
+the maximum length for the queue of pending connections (1.9.2).
+By default,
+<literal>backlog</literal> is set to -1 on FreeBSD, DragonFly BSD, and macOS,
+and to 511 on other platforms.
+</tag-desc>
+
+<tag-name>
+<literal>rcvbuf</literal>=<value>size</value>
+</tag-name>
+<tag-desc>
+sets the receive buffer size
+(the <c-def>SO_RCVBUF</c-def> option) for the listening socket (1.11.13).
+</tag-desc>
+
+<tag-name>
+<literal>sndbuf</literal>=<value>size</value>
+</tag-name>
+<tag-desc>
+sets the send buffer size
+(the <c-def>SO_SNDBUF</c-def> option) for the listening socket (1.11.13).
+</tag-desc>
+
+<tag-name>
+<literal>bind</literal>
+</tag-name>
+<tag-desc>
+this parameter instructs to make a separate <c-func>bind</c-func>
+call for a given address:port pair.
+The fact is that if there are several <literal>listen</literal> directives with
+the same port but different addresses, and one of the
+<literal>listen</literal> directives listens on all addresses
+for the given port (<literal>*:</literal><value>port</value>), nginx will
+<c-func>bind</c-func> only to <literal>*:</literal><value>port</value>.
+It should be noted that the <c-func>getsockname</c-func> system call will be
+made in this case to determine the address that accepted the connection.
+If the <literal>backlog</literal>,
+<literal>rcvbuf</literal>, <literal>sndbuf</literal>,
+<literal>ipv6only</literal>,
+or <literal>so_keepalive</literal> parameters
+are used then for a given
+<value>address</value>:<value>port</value> pair
+a separate <c-func>bind</c-func> call will always be made.
+</tag-desc>
+
+<tag-name>
+<literal>ipv6only</literal>=<literal>on</literal>|<literal>off</literal>
+</tag-name>
+<tag-desc>
+this parameter determines
+(via the <c-def>IPV6_V6ONLY</c-def> socket option)
+whether an IPv6 socket listening on a wildcard address <literal>[::]</literal>
+will accept only IPv6 connections or both IPv6 and IPv4 connections.
+This parameter is turned on by default.
+It can only be set once on start.
+</tag-desc>
+
+<tag-name>
+<literal>so_keepalive</literal>=<literal>on</literal>|<literal>off</literal>|[<value>keepidle</value>]:[<value>keepintvl</value>]:[<value>keepcnt</value>]
+</tag-name>
+<tag-desc>
+this parameter configures the “TCP keepalive” behavior
+for the listening socket.
+If this parameter is omitted then the operating system’s settings will be
+in effect for the socket.
+If it is set to the value “<literal>on</literal>”, the
+<c-def>SO_KEEPALIVE</c-def> option is turned on for the socket.
+If it is set to the value “<literal>off</literal>”, the
+<c-def>SO_KEEPALIVE</c-def> option is turned off for the socket.
+Some operating systems support setting of TCP keepalive parameters on
+a per-socket basis using the <c-def>TCP_KEEPIDLE</c-def>,
+<c-def>TCP_KEEPINTVL</c-def>, and <c-def>TCP_KEEPCNT</c-def> socket options.
+On such systems (currently, Linux 2.4+, NetBSD 5+, and
+FreeBSD 9.0-STABLE), they can be configured
+using the <value>keepidle</value>, <value>keepintvl</value>, and
+<value>keepcnt</value> parameters.
+One or two parameters may be omitted, in which case the system default setting
+for the corresponding socket option will be in effect.
+For example,
+<example>so_keepalive=30m::10</example>
+will set the idle timeout (<c-def>TCP_KEEPIDLE</c-def>) to 30 minutes,
+leave the probe interval (<c-def>TCP_KEEPINTVL</c-def>) at its system default,
+and set the probes count (<c-def>TCP_KEEPCNT</c-def>) to 10 probes.
+</tag-desc>
+
+</list>
+</para>
+
+</directive>
+
+
+<directive name="mail">
+<syntax block="yes"/>
+<default/>
+<context>main</context>
+
+<para>
+Provides the configuration file context in which the mail server directives
+are specified.
+</para>
+
+</directive>
+
+
+<directive name="max_errors">
+<syntax><value>number</value></syntax>
+<default>5</default>
+<context>mail</context>
+<context>server</context>
+<appeared-in>1.21.0</appeared-in>
+
+<para>
+Sets the number of protocol errors after which the connection is closed.
+</para>
+
+</directive>
+
+
+<directive name="protocol">
+<syntax>
+  <literal>imap</literal> |
+  <literal>pop3</literal> |
+  <literal>smtp</literal></syntax>
+<default/>
+<context>server</context>
+
+<para>
+Sets the protocol for a proxied server.
+Supported protocols are
+<link doc="ngx_mail_imap_module.xml">IMAP</link>,
+<link doc="ngx_mail_pop3_module.xml">POP3</link>, and
+<link doc="ngx_mail_smtp_module.xml">SMTP</link>.
+</para>
+
+<para>
+If the directive is not set, the protocol can be detected automatically
+based on the well-known port specified in the <link id="listen"/>
+directive:
+<list type="bullet">
+
+<listitem>
+<literal>imap</literal>: 143, 993
+</listitem>
+
+<listitem>
+<literal>pop3</literal>: 110, 995
+</listitem>
+
+<listitem>
+<literal>smtp</literal>: 25, 587, 465
+</listitem>
+
+</list>
+</para>
+
+<para>
+Unnecessary protocols can be disabled using the
+<link doc="../configure.xml">configuration</link>
+parameters <literal>--without-mail_imap_module</literal>,
+<literal>--without-mail_pop3_module</literal>, and
+<literal>--without-mail_smtp_module</literal>.
+</para>
+
+</directive>
+
+
+<directive name="resolver">
+<syntax>
+    <value>address</value> ...
+    [<literal>valid</literal>=<value>time</value>]
+    [<literal>ipv4</literal>=<literal>on</literal>|<literal>off</literal>]
+    [<literal>ipv6</literal>=<literal>on</literal>|<literal>off</literal>]
+    [<literal>status_zone</literal>=<value>zone</value>]</syntax>
+<syntax><literal>off</literal></syntax>
+<default>off</default>
+<context>mail</context>
+<context>server</context>
+
+<para>
+Configures name servers used to find the client’s hostname
+to pass it to the
+<link doc="ngx_mail_auth_http_module.xml">authentication server</link>,
+and in the
+<link doc="ngx_mail_proxy_module.xml" id="xclient">XCLIENT</link>
+command when proxying SMTP.
+For example:
+<example>
+resolver 127.0.0.1 [::1]:5353;
+</example>
+The address can be specified as a domain name or IP address,
+with an optional port (1.3.1, 1.2.2).
+If port is not specified, the port 53 is used.
+Name servers are queried in a round-robin fashion.
+<note>
+Before version 1.1.7, only a single name server could be configured.
+Specifying name servers using IPv6 addresses is supported
+starting from versions 1.3.1 and 1.2.2.
+</note>
+</para>
+
+<para id="resolver_ipv6">
+By default, nginx will look up both IPv4 and IPv6 addresses while resolving.
+If looking up of IPv4 or IPv6 addresses is not desired,
+the <literal>ipv4=off</literal> (1.23.1) or
+the <literal>ipv6=off</literal> parameter can be specified.
+<note>
+Resolving of names into IPv6 addresses is supported
+starting from version 1.5.8.
+</note>
+</para>
+
+<para id="resolver_valid">
+By default, nginx caches answers using the TTL value of a response.
+An optional <literal>valid</literal> parameter allows overriding it:
+<example>
+resolver 127.0.0.1 [::1]:5353 valid=30s;
+</example>
+<note>
+Before version 1.1.9, tuning of caching time was not possible,
+and nginx always cached answers for the duration of 5 minutes.
+</note>
+<note>
+To prevent DNS spoofing, it is recommended
+configuring DNS servers in a properly secured trusted local network.
+</note>
+</para>
+
+<para id="resolver_status_zone">
+The optional <literal>status_zone</literal> parameter (1.17.1)
+enables
+<link doc="../http/ngx_http_api_module.xml" id="resolvers_">collection</link>
+of DNS server statistics of requests and responses
+in the specified <value>zone</value>.
+The parameter is available as part of our
+<commercial_version>commercial subscription</commercial_version>.
+</para>
+
+<para id="resolver_off">
+The special value <literal>off</literal> disables resolving.
+</para>
+
+</directive>
+
+
+<directive name="resolver_timeout">
+<syntax><value>time</value></syntax>
+<default>30s</default>
+<context>mail</context>
+<context>server</context>
+
+<para>
+Sets a timeout for DNS operations, for example:
+<example>
+resolver_timeout 5s;
+</example>
+</para>
+
+</directive>
+
+
+<directive name="server">
+<syntax block="yes"/>
+<default/>
+<context>mail</context>
+
+<para>
+Sets the configuration for a server.
+</para>
+
+</directive>
+
+
+<directive name="server_name">
+<syntax><value>name</value></syntax>
+<default>hostname</default>
+<context>mail</context>
+<context>server</context>
+
+<para>
+Sets the server name that is used:
+<list type="bullet">
+
+<listitem>
+in the initial POP3/SMTP server greeting;
+</listitem>
+
+<listitem>
+in the salt during the SASL CRAM-MD5 authentication;
+</listitem>
+
+<listitem>
+in the <literal>EHLO</literal> command when connecting to the SMTP backend,
+if the passing of the
+<link doc="ngx_mail_proxy_module.xml" id="xclient">XCLIENT</link> command
+is enabled.
+</listitem>
+
+</list>
+</para>
+
+<para>
+If the directive is not specified, the machine’s hostname is used.
+</para>
+
+</directive>
+
+
+<directive name="timeout">
+<syntax><value>time</value></syntax>
+<default>60s</default>
+<context>mail</context>
+<context>server</context>
+
+<para>
+Sets the timeout that is used before proxying to the backend starts.
+</para>
+
+</directive>
+
+</section>
+
+</module>

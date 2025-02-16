@@ -1,0 +1,241 @@
+<?xml version="1.0"?>
+
+<!--
+  Copyright (C) Nginx, Inc.
+  -->
+
+<!DOCTYPE module SYSTEM "../../../dtd/module.dtd">
+
+<module name="Module ngx_mgmt_module"
+        link="/en/docs/ngx_mgmt_module.html"
+        lang="en"
+        rev="2">
+
+<section id="summary">
+
+<para>
+The <literal>ngx_mgmt_module</literal> module enables
+NGINX Plus license verification and usage reporting.
+This is mandatory for each
+<link url="https://docs.nginx.com/nginx/releases/#nginxplusrelease-33-r33"><literal>nginx/1.27.2
+(nginx-plus-r33)</literal></link> instance.
+</para>
+
+<para>
+A JWT license file named <literal>license.jwt</literal>
+should be located at
+<literal>/etc/nginx/</literal> for Linux or
+<literal>/usr/local/etc/nginx/</literal> for FreeBSD
+or at the path specified by the <link id="license_token"/> directive.
+The license file is available from
+<link url="https://my.f5.com">MyF5</link>.
+</para>
+
+<para>
+Usage report is sent to F5 licensing endpoint
+<link id="usage_report">every hour</link> using the
+<link id="ssl_verify">secure</link> connection.
+Optionally, in network-restricted environments
+reporting can be <link id="usage_report">configured</link> to
+<link url="https://docs.nginx.com/nginx-management-suite/about/">F5 NGINX
+Instance Manager</link> from which the report can be sent
+to F5 licensing endpoint.
+</para>
+
+<para>
+By default, if the <link id="enforce_initial_report">initial usage report</link>
+is not received by F5 licensing endpoint, nginx will stop processing traffic.
+</para>
+
+<para>
+<note>
+This module is available as part of our
+<commercial_version>commercial subscription</commercial_version>.
+</note>
+</para>
+
+</section>
+
+
+<section id="example" name="Example Configuration">
+
+<para>
+<example>
+mgmt {
+    # in case if custom path is required
+    license_token custom/file/path/license.jwt;
+
+    # in case of reporting to NGINX Instance Manager
+    usage_report endpoint=NIM_FQDN;
+}
+</example>
+</para>
+
+</section>
+
+
+<section id="directives" name="Directives">
+
+<directive name="mgmt">
+<syntax block="yes"/>
+<default/>
+<context>main</context>
+
+<para>
+Provides the configuration file context in which
+usage reporting and license management directives
+are specified.
+</para>
+
+</directive>
+
+
+<directive name="enforce_initial_report">
+<syntax><literal>on</literal> | <literal>off</literal></syntax>
+<default>on</default>
+<context>mgmt</context>
+<appeared-in>1.27.2</appeared-in>
+
+<para>
+Enables or disables the 180-day grace period
+for sending the initial usage report.
+</para>
+
+<para>
+The initial usage report is sent immediately
+upon nginx first start after installation.
+By default, if the initial report is not received by F5 licensing endpoint,
+nginx stops processing traffic until the report is successfully delivered.
+Setting the directive value to <literal>off</literal> enables
+the 180-day grace period during which
+the initial usage report must be received by F5 licensing endpoint.
+</para>
+
+</directive>
+
+
+<directive name="license_token">
+<syntax><value>file</value></syntax>
+<default>license.jwt</default>
+<context>mgmt</context>
+<appeared-in>1.27.2</appeared-in>
+
+<para>
+Specifies a JWT license <value>file</value>.
+By default, the <value>license.jwt</value> file is expected to be at
+<literal>/etc/nginx/</literal> for Linux or at
+<literal>/usr/local/etc/nginx/</literal> for FreeBSD.
+</para>
+
+</directive>
+
+
+<directive name="resolver">
+<syntax>
+    <value>address</value> ...
+    [<literal>valid</literal>=<value>time</value>]
+    [<literal>ipv4</literal>=<literal>on</literal>|<literal>off</literal>]
+    [<literal>ipv6</literal>=<literal>on</literal>|<literal>off</literal>]
+    [<literal>status_zone</literal>=<value>zone</value>]</syntax>
+<default/>
+<context>mgmt</context>
+
+<para>
+Configures name servers used to resolve usage reporting endpoint name.
+By default, the system resolver is used.
+</para>
+
+<para>
+See <link doc="http/ngx_http_core_module.xml" id="resolver"/> for details.
+</para>
+
+</directive>
+
+
+<directive name="ssl_crl">
+<syntax><value>file</value></syntax>
+<default/>
+<context>mgmt</context>
+
+<para>
+Specifies a <value>file</value> with revoked certificates (CRL)
+in the PEM format used to <link id="ssl_verify">verify</link>
+the certificate of the usage reporting endpoint.
+</para>
+
+</directive>
+
+
+<directive name="ssl_trusted_certificate">
+<syntax><value>file</value></syntax>
+<default>system CA bundle</default>
+<context>mgmt</context>
+
+<para>
+Specifies a <value>file</value> with trusted CA certificates in the PEM format
+used to <link id="ssl_verify">verify</link>
+the certificate of the usage reporting endpoint.
+</para>
+
+</directive>
+
+
+<directive name="ssl_verify">
+<syntax><literal>on</literal> | <literal>off</literal></syntax>
+<default>on</default>
+<context>mgmt</context>
+
+<para>
+Enables or disables verification of the usage reporting endpoint certificate.
+</para>
+
+<para>
+<note>
+Before 1.27.2, the default value was <literal>off</literal>.
+</note>
+</para>
+
+</directive>
+
+
+<directive name="state_path">
+<syntax><value>path</value></syntax>
+<default/>
+<context>mgmt</context>
+<appeared-in>1.27.2</appeared-in>
+
+<para>
+Defines a directory for storing state files
+(<literal>nginx-mgmt-*</literal>)
+created by the <literal>ngx_mgmt_module</literal> module.
+The default directory
+for Linux is <literal>/var/lib/nginx/state</literal>,
+for FreeBSD is <literal>/var/db/nginx/state</literal>.
+</para>
+
+</directive>
+
+
+<directive name="usage_report">
+<syntax> [<literal>endpoint</literal>=<value>address</value>]
+         [<literal>interval</literal>=<value>time</value>]</syntax>
+<default>endpoint=product.connect.nginx.com interval=1h</default>
+<context>mgmt</context>
+
+<para>
+Sets the <value>address</value> and <value>port</value>
+of the usage reporting endpoint.
+The <literal>interval</literal> parameter sets an interval between
+two consecutive reports.
+<note>
+Before 1.27.2, the default values were
+<literal>nginx-mgmt.local</literal> and
+<literal>30m</literal>.
+</note>
+</para>
+
+</directive>
+
+</section>
+
+</module>

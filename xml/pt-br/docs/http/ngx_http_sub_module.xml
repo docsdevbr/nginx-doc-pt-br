@@ -1,0 +1,123 @@
+<?xml version="1.0"?>
+
+<!--
+  Copyright (C) Igor Sysoev
+  Copyright (C) Nginx, Inc.
+  -->
+
+<!DOCTYPE module SYSTEM "../../../../dtd/module.dtd">
+
+<module name="Module ngx_http_sub_module"
+        link="/en/docs/http/ngx_http_sub_module.html"
+        lang="en"
+        rev="6">
+
+<section id="summary">
+
+<para>
+The <literal>ngx_http_sub_module</literal> module is a filter
+that modifies a response by replacing one specified string by another.
+</para>
+
+<para>
+This module is not built by default, it should be enabled with the
+<literal>--with-http_sub_module</literal>
+configuration parameter.
+</para>
+
+</section>
+
+
+<section id="example" name="Example Configuration">
+
+<para>
+<example>
+location / {
+    sub_filter '&lt;a href="http://127.0.0.1:8080/'  '&lt;a href="https://$host/';
+    sub_filter '&lt;img src="http://127.0.0.1:8080/' '&lt;img src="https://$host/';
+    sub_filter_once on;
+}
+</example>
+</para>
+
+</section>
+
+
+<section id="directives" name="Directives">
+
+<directive name="sub_filter">
+<syntax><value>string</value> <value>replacement</value></syntax>
+<default/>
+<context>http</context>
+<context>server</context>
+<context>location</context>
+
+<para>
+Sets a string to replace and a replacement string.
+The string to replace is matched ignoring the case.
+The string to replace (1.9.4) and replacement string can contain variables.
+Several <literal>sub_filter</literal> directives
+can be specified on the same configuration level (1.9.4).
+These directives are inherited from the previous configuration level
+if and only if there are no <literal>sub_filter</literal> directives
+defined on the current level.
+</para>
+
+</directive>
+
+
+<directive name="sub_filter_last_modified">
+<syntax><literal>on</literal> | <literal>off</literal></syntax>
+<default>off</default>
+<context>http</context>
+<context>server</context>
+<context>location</context>
+<appeared-in>1.5.1</appeared-in>
+
+<para>
+Allows preserving the <header>Last-Modified</header> header field
+from the original response during replacement
+to facilitate response caching.
+</para>
+
+<para>
+By default, the header field is removed as contents of the response
+are modified during processing.
+</para>
+
+</directive>
+
+
+<directive name="sub_filter_once">
+<syntax><literal>on</literal> | <literal>off</literal></syntax>
+<default>on</default>
+<context>http</context>
+<context>server</context>
+<context>location</context>
+
+<para>
+Indicates whether to look for each string to replace
+once or repeatedly.
+</para>
+
+</directive>
+
+
+<directive name="sub_filter_types">
+<syntax><value>mime-type</value> ...</syntax>
+<default>text/html</default>
+<context>http</context>
+<context>server</context>
+<context>location</context>
+
+<para>
+Enables string replacement in responses with the specified MIME types
+in addition to “<literal>text/html</literal>”.
+The special value “<literal>*</literal>” matches any MIME type (0.8.29).
+</para>
+
+</directive>
+
+</section>
+
+</module>

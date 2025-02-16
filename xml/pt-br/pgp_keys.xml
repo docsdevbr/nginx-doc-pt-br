@@ -1,0 +1,39 @@
+<!--
+  Copyright (C) Igor Sysoev
+  Copyright (C) Nginx, Inc.
+  -->
+
+<!DOCTYPE article SYSTEM "../../dtd/article.dtd">
+
+<article name="PGP public keys"
+         link="/en/pgp_keys.html"
+                  lang="en"
+                  rev="3">
+
+<section>
+<para>
+<list type="bullet">
+<listitem>
+<link url="/keys/arut.key">Roman Arutyunyan&rsquo;s
+PGP public key</link>
+</listitem>
+<listitem>
+<link url="/keys/pluknet.key">Sergey Kandaurov&rsquo;s
+PGP public key</link>
+</listitem>
+<listitem>
+<link url="/keys/sb.key">Sergey Budnevitch&rsquo;s
+PGP public key</link>
+</listitem>
+<listitem>
+<link url="/keys/thresh.key">Konstantin Pavlov&rsquo;s
+PGP public key</link>
+</listitem>
+<listitem>
+<link url="/keys/nginx_signing.key">nginx
+public key (used for signing packages and repositories)</link>
+</listitem>
+</list>
+</para>
+</section>
+</article>

@@ -1,0 +1,399 @@
+<?xml version="1.0"?>
+
+<!--
+  Copyright (C) Nginx, Inc.
+  -->
+
+<!DOCTYPE module SYSTEM "../../../../dtd/module.dtd">
+
+<module name="Module ngx_http_v2_module"
+        link="/en/docs/http/ngx_http_v2_module.html"
+        lang="en"
+        rev="18">
+
+<section id="summary">
+
+<para>
+The <literal>ngx_http_v2_module</literal> module (1.9.5) provides
+support for
+<link url="https://datatracker.ietf.org/doc/html/rfc7540">HTTP/2</link>.
+</para>
+
+<para>
+This module is not built by default, it should be enabled with
+the <literal>--with-http_v2_module</literal>
+configuration parameter.
+</para>
+
+</section>
+
+
+<section id="issues" name="Known Issues">
+
+<para>
+Before version 1.9.14,
+buffering of a client request body could not be disabled
+regardless of
+<link doc="ngx_http_proxy_module.xml" id="proxy_request_buffering"/>,
+<link doc="ngx_http_fastcgi_module.xml" id="fastcgi_request_buffering"/>,
+<link doc="ngx_http_uwsgi_module.xml" id="uwsgi_request_buffering"/>, and
+<link doc="ngx_http_scgi_module.xml" id="scgi_request_buffering"/>
+directive values.
+</para>
+
+<para>
+Before version 1.19.1,
+the <link doc="ngx_http_core_module.xml" id="lingering_close"/> mechanism
+was not used to control closing HTTP/2 connections.
+</para>
+
+</section>
+
+
+<section id="example" name="Example Configuration">
+
+<para>
+<example>
+server {
+    listen 443 ssl;
+
+    http2 on;
+
+    ssl_certificate server.crt;
+    ssl_certificate_key server.key;
+}
+</example>
+Note that accepting HTTP/2 connections over TLS requires
+the “Application-Layer Protocol Negotiation” (ALPN) TLS extension
+support, which is available since
+<link url="http://www.openssl.org">OpenSSL</link> version 1.0.2.
+</para>
+
+<para>
+Also note that if the
+<link doc="ngx_http_ssl_module.xml" id="ssl_prefer_server_ciphers"/> directive
+is set to the value “<literal>on</literal>”,
+the <link doc="ngx_http_ssl_module.xml" id="ssl_ciphers">ciphers</link>
+should be configured to comply with
+<link url="https://datatracker.ietf.org/doc/html/rfc9113#appendix-A">RFC 9113, Appendix A</link>
+black list and supported by clients.
+</para>
+
+</section>
+
+
+<section id="directives" name="Directives">
+
+<directive name="http2">
+<syntax><literal>on</literal> | <literal>off</literal></syntax>
+<default>off</default>
+<context>http</context>
+<context>server</context>
+<appeared-in>1.25.1</appeared-in>
+
+<para>
+Enables
+the <link url="https://datatracker.ietf.org/doc/html/rfc9113">HTTP/2</link>
+protocol.
+</para>
+
+</directive>
+
+
+<directive name="http2_body_preread_size">
+<syntax><value>size</value></syntax>
+<default>64k</default>
+<context>http</context>
+<context>server</context>
+<appeared-in>1.11.0</appeared-in>
+
+<para>
+Sets the <value>size</value> of the buffer per each request
+in which the request body may be saved
+before it is started to be processed.
+</para>
+
+</directive>
+
+
+<directive name="http2_chunk_size">
+<syntax><value>size</value></syntax>
+<default>8k</default>
+<context>http</context>
+<context>server</context>
+<context>location</context>
+
+<para>
+Sets the maximum size of chunks
+into which the response body is sliced.
+A too low value results in higher overhead.
+A too high value impairs prioritization due to
+<link url="http://en.wikipedia.org/wiki/Head-of-line_blocking">
+HOL blocking</link>.
+</para>
+
+</directive>
+
+
+<directive name="http2_idle_timeout">
+<syntax><value>time</value></syntax>
+<default>3m</default>
+<context>http</context>
+<context>server</context>
+
+<para>
+<note>
+This directive is obsolete since version 1.19.7.
+The <link doc="ngx_http_core_module.xml" id="keepalive_timeout"/>
+directive should be used instead.
+</note>
+</para>
+
+<para>
+Sets the timeout of inactivity after which the connection is closed.
+</para>
+
+</directive>
+
+
+<directive name="http2_max_concurrent_pushes">
+<syntax><value>number</value></syntax>
+<default>10</default>
+<context>http</context>
+<context>server</context>
+<appeared-in>1.13.9</appeared-in>
+
+<para>
+<note>
+This directive is obsolete since version 1.25.1.
+</note>
+</para>
+
+<para>
+Limits the maximum number of concurrent
+<link id="http2_push">push</link> requests in a connection.
+</para>
+
+</directive>
+
+
+<directive name="http2_max_concurrent_streams">
+<syntax><value>number</value></syntax>
+<default>128</default>
+<context>http</context>
+<context>server</context>
+
+<para>
+Sets the maximum number of concurrent HTTP/2 streams
+in a connection.
+</para>
+
+</directive>
+
+
+<directive name="http2_max_field_size">
+<syntax><value>size</value></syntax>
+<default>4k</default>
+<context>http</context>
+<context>server</context>
+
+<para>
+<note>
+This directive is obsolete since version 1.19.7.
+The <link doc="ngx_http_core_module.xml" id="large_client_header_buffers"/>
+directive should be used instead.
+</note>
+</para>
+
+<para>
+Limits the maximum size of
+an <link url="https://datatracker.ietf.org/doc/html/rfc7541">HPACK</link>-compressed
+request header field.
+The limit applies equally to both name and value.
+Note that if Huffman encoding is applied,
+the actual size of decompressed name and value strings may be larger.
+For most requests, the default limit should be enough.
+</para>
+
+</directive>
+
+
+<directive name="http2_max_header_size">
+<syntax><value>size</value></syntax>
+<default>16k</default>
+<context>http</context>
+<context>server</context>
+
+<para>
+<note>
+This directive is obsolete since version 1.19.7.
+The <link doc="ngx_http_core_module.xml" id="large_client_header_buffers"/>
+directive should be used instead.
+</note>
+</para>
+
+<para>
+Limits the maximum size of the entire request header list after
+<link url="https://datatracker.ietf.org/doc/html/rfc7541">HPACK</link> decompression.
+For most requests, the default limit should be enough.
+</para>
+
+</directive>
+
+
+<directive name="http2_max_requests">
+<syntax><value>number</value></syntax>
+<default>1000</default>
+<context>http</context>
+<context>server</context>
+<appeared-in>1.11.6</appeared-in>
+
+<para>
+<note>
+This directive is obsolete since version 1.19.7.
+The <link doc="ngx_http_core_module.xml" id="keepalive_requests"/>
+directive should be used instead.
+</note>
+</para>
+
+<para>
+Sets the maximum number of requests (including
+<link id="http2_push">push</link> requests) that can be served
+through one HTTP/2 connection,
+after which the next client request will lead to connection closing
+and the need of establishing a new connection.
+</para>
+
+<para>
+Closing connections periodically is necessary to free
+per-connection memory allocations.
+Therefore, using too high maximum number of requests
+could result in excessive memory usage and not recommended.
+</para>
+
+</directive>
+
+
+<directive name="http2_push">
+<syntax><value>uri</value> | <literal>off</literal></syntax>
+<default>off</default>
+<context>http</context>
+<context>server</context>
+<context>location</context>
+<appeared-in>1.13.9</appeared-in>
+
+<para>
+<note>
+This directive is obsolete since version 1.25.1.
+</note>
+</para>
+
+<para>
+Pre-emptively sends
+(<link url="https://datatracker.ietf.org/doc/html/rfc9113#section-8.4">pushes</link>)
+a request to the specified <value>uri</value>
+along with the response to the original request.
+Only relative URIs with absolute path will be processed,
+for example:
+<example>
+http2_push /static/css/main.css;
+</example>
+The <value>uri</value> value can contain variables.
+</para>
+
+<para>
+Several <literal>http2_push</literal> directives
+can be specified on the same configuration level.
+The <literal>off</literal> parameter cancels the effect
+of the <literal>http2_push</literal> directives
+inherited from the previous configuration level.
+</para>
+
+</directive>
+
+
+<directive name="http2_push_preload">
+<syntax><literal>on</literal> | <literal>off</literal></syntax>
+<default>off</default>
+<context>http</context>
+<context>server</context>
+<context>location</context>
+<appeared-in>1.13.9</appeared-in>
+
+<para>
+<note>
+This directive is obsolete since version 1.25.1.
+</note>
+</para>
+
+<para>
+Enables automatic conversion of
+<link url="https://www.w3.org/TR/preload/#server-push-http-2">preload
+links</link>
+specified in the <header>Link</header> response header fields into
+<link url="https://datatracker.ietf.org/doc/html/rfc9113#section-8.4">push</link>
+requests.
+</para>
+
+</directive>
+
+
+<directive name="http2_recv_buffer_size">
+<syntax><value>size</value></syntax>
+<default>256k</default>
+<context>http</context>
+
+<para>
+Sets the size of the per
+<link doc="../ngx_core_module.xml" id="worker_processes">worker</link>
+input buffer.
+</para>
+
+</directive>
+
+
+<directive name="http2_recv_timeout">
+<syntax><value>time</value></syntax>
+<default>30s</default>
+<context>http</context>
+<context>server</context>
+
+<para>
+<note>
+This directive is obsolete since version 1.19.7.
+The <link doc="ngx_http_core_module.xml" id="client_header_timeout"/>
+directive should be used instead.
+</note>
+</para>
+
+<para>
+Sets the timeout for expecting more data from the client,
+after which the connection is closed.
+</para>
+
+</directive>
+
+</section>
+
+
+<section id="variables" name="Embedded Variables">
+
+<para>
+The <literal>ngx_http_v2_module</literal> module
+supports the following embedded variables:
+<list type="tag" compact="no">
+
+<tag-name id="var_http2"><var>$http2</var></tag-name>
+<tag-desc>
+negotiated protocol identifier:
+“<literal>h2</literal>” for HTTP/2 over TLS,
+“<literal>h2c</literal>” for HTTP/2 over cleartext TCP,
+or an empty string otherwise.
+</tag-desc>
+
+</list>
+</para>
+
+</section>
+
+</module>

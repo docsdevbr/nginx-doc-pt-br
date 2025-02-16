@@ -1,0 +1,110 @@
+<?xml version="1.0"?>
+
+<!--
+  Copyright (C) Nginx, Inc.
+  -->
+
+<!DOCTYPE article SYSTEM "../../../../dtd/article.dtd">
+
+<article name="Download and install"
+        link="/en/docs/njs/install.html"
+        lang="en"
+        rev="5">
+
+<section id="install_package" name="Installing as a Linux package">
+
+<para>
+For Linux, njs modules
+<link doc="../../linux_packages.xml" id="dynmodules">packages</link> can be used:
+<list type="bullet">
+
+<listitem>
+<literal>nginx-module-njs</literal> — njs
+<link doc="../ngx_core_module.xml" id="load_module">dynamic</link> modules
+</listitem>
+
+<listitem>
+<literal>nginx-module-njs-dbg</literal> — debug symbols for the
+<literal>nginx-module-njs</literal> package
+</listitem>
+
+</list>
+</para>
+
+<para>
+After package installation, njs dynamic modules need to be loaded with the
+<link doc="../ngx_core_module.xml" id="load_module"><literal>load_module</literal></link>
+directive:
+<example>
+load_module modules/ngx_http_js_module.so;
+</example>
+or
+<example>
+load_module modules/ngx_stream_js_module.so;
+</example>
+</para>
+
+</section>
+
+
+<section id="install_sources" name="Building from the sources">
+
+<para>
+The <link url="https://github.com/nginx/njs">repository</link>
+with njs sources can be cloned with the following command
+(requires <link url="https://git-scm.com/">Git</link> client):
+<example>
+git clone https://github.com/nginx/njs
+</example>
+Then the modules should be compiled from
+<link doc="../configure.xml">nginx</link> root directory using the
+<literal>--add-module</literal> configuration parameter:
+<example>
+./configure --add-module=<value>path-to-njs</value>/nginx
+</example>
+The modules can also be built as
+<link doc="../ngx_core_module.xml" id="load_module">dynamic</link>:
+<example>
+./configure --add-dynamic-module=<value>path-to-njs</value>/nginx
+</example>
+</para>
+
+<section id="install_quickjs" name="Adding QuickJS engine support">
+
+<para>
+Make sure you have built the QuickJS library:
+<example>
+git clone https://github.com/bellard/quickjs
+cd quickjs
+CFLAGS='-fPIC' make libquickjs.a
+</example>
+At the module compilation step, also
+specify the include (<literal>-I</literal>) and library (<literal>-L</literal>)
+paths with the
+<literal>--with-cc-opt=</literal> and
+<literal>--with-ld-opt=</literal> configuration parameters:
+<example>
+./configure --add-module=<value>path-to-njs</value>/nginx \
+    --with-cc-opt="-I <value>path-to-quickjs</value>" \
+    --with-ld-opt="-L <value>path-to-quickjs</value>"
+</example>
+</para>
+
+</section>
+
+</section>
+
+
+<section id="cli" name="Building njs command-line utility">
+
+<para>
+To build only the njs command-line <link doc="cli.xml">utility</link>, run
+<literal>./configure</literal> and <literal>make njs</literal> commands
+from njs root directory.
+After building, the utility is available as <literal>./build/njs</literal>.
+</para>
+
+</section>
+
+</article>
+

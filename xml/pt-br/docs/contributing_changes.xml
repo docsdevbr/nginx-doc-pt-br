@@ -1,0 +1,153 @@
+<?xml version="1.0"?>
+
+<!--
+  Copyright (C) Nginx, Inc.
+  -->
+
+<!DOCTYPE article SYSTEM "../../../dtd/article.dtd">
+
+<article name="Contributing Changes"
+         link="/en/docs/contributing_changes.html"
+         lang="en"
+         rev="5">
+
+<section id="getting_sources" name="Getting Sources">
+
+<para>
+<link url="https://github.com">GitHub</link> is used
+to store source code.
+The <link url="https://github.com/nginx/nginx">repository</link> can be cloned
+with the following command:
+<programlisting>
+git clone https://github.com/nginx/nginx.git
+</programlisting>
+</para>
+
+</section>
+
+
+<section id="formatting_changes" name="Formatting Changes">
+
+<para>
+Changes should be formatted according to the
+<link doc="../docs/dev/development_guide.xml" id="code_style">code style</link>
+used by nginx.
+Sometimes, there is no clear rule; in such cases
+examine how existing nginx sources are formatted and mimic this style.
+Changes will more likely be accepted if style corresponds to the surrounding
+code.
+</para>
+
+<para>
+<link url="https://docs.github.com/en/pull-requests/committing-changes-to-your-project/creating-and-editing-commits/about-commits">Commit</link>
+the changes in your nginx GitHub fork.
+Please ensure that the specified
+<link url="https://docs.github.com/en/get-started/getting-started-with-git/setting-your-username-in-git">e-mail</link>
+address and real name of the author are correct.
+</para>
+
+<para>
+The commit message should have a single-line synopsis followed by verbose
+description after an empty line.
+It is desirable that the first line is no longer than 67 symbols,
+and the remaining lines are no longer than 76 symbols.
+The resulting commit can be obtained using the
+<literal>git show</literal> command:
+<programlisting>
+commit 8597218f386351d6c6cdced24af6716e19a18fc3
+Author: Filipe Da Silva &lt;username@example.com&gt;
+Date:   Thu May 9 10:54:28 2013 +0200
+
+    Mail: removed surplus ngx_close_connection() call.
+
+    It is already called for a peer connection a few lines above.
+
+diff --git a/src/mail/ngx_mail_auth_http_module.c b/src/mail/ngx_mail_auth_http_module.c
+index 2e9b9f24d..8094bbc5c 100644
+--- a/src/mail/ngx_mail_auth_http_module.c
++++ b/src/mail/ngx_mail_auth_http_module.c
+@@ -699,7 +699,6 @@ ngx_mail_auth_http_process_headers(ngx_mail_session_t *s,
+
+                     p = ngx_pnalloc(s->connection->pool, ctx->err.len);
+                     if (p == NULL) {
+-                        ngx_close_connection(ctx->peer.connection);
+                         ngx_destroy_pool(ctx->pool);
+                         ngx_mail_session_internal_server_error(s);
+                         return;
+</programlisting>
+</para>
+
+</section>
+
+
+<section id="before_submitting" name="Before Submitting">
+
+<para>
+Several points are worth to consider before submitting changes:
+<list type="bullet">
+
+<listitem>
+The proposed changes should work properly on a wide range of
+<link doc="../index.xml" id="tested_os_and_platforms">supported
+platforms</link>.
+</listitem>
+
+<listitem>
+Try to make it clear why the suggested change is needed, and provide a use
+case, if possible.
+</listitem>
+
+<listitem>
+Passing your changes through the test suite is a good way to ensure
+that they do not cause a regression.
+The <link url="https://github.com/nginx/nginx-tests">repository</link> with
+tests can be cloned with the following command:
+<programlisting>
+git clone https://github.com/nginx/nginx-tests.git
+</programlisting>
+</listitem>
+
+</list>
+</para>
+
+</section>
+
+
+<section id="submitting_changes" name="Submitting Changes">
+
+<para>
+The proposed changes should be submitted from your fork to
+<link url="https://github.com/nginx/nginx">nginx repository</link>
+as a
+<link url="https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork">pull request</link>.
+</para>
+
+</section>
+
+
+<section id="website" name="Website">
+
+<para>
+GitHub is used to store the sources for this website.
+The <link url="https://www.github.com/nginx/nginx.org">repository</link>
+can be cloned with the following command:
+<programlisting>
+git clone https://github.com/nginx/nginx.org.git
+</programlisting>
+Documentation changes should be submitted from your fork
+as a pull request.
+</para>
+
+</section>
+
+
+<section id="license" name="License">
+
+<para>
+Submitting changes implies granting project a permission to use it under
+an appropriate <link url="../../LICENSE">license</link>.
+</para>
+
+</section>
+
+</article>

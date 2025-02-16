@@ -1,0 +1,686 @@
+<?xml version="1.0"?>
+
+<!--
+  Copyright (C) 2006, 2007 Anton Yuzhaninov
+  Copyright (C) Nginx, Inc.
+  -->
+
+<!DOCTYPE module SYSTEM "../../../../dtd/module.dtd">
+
+<module name="Module ngx_mail_ssl_module"
+        link="/en/docs/mail/ngx_mail_ssl_module.html"
+        lang="en"
+        rev="29">
+
+<section id="summary">
+
+<para>
+The <literal>ngx_mail_ssl_module</literal> module provides the necessary
+support for a mail proxy server to work with the SSL/TLS protocol.
+</para>
+
+<para>
+This module is not built by default, it should be enabled with
+the <literal>--with-mail_ssl_module</literal>
+configuration parameter.
+<note>
+This module requires the <link url="http://www.openssl.org">OpenSSL</link>
+library.
+</note>
+</para>
+
+</section>
+
+
+<section id="example" name="Example Configuration">
+
+<para>
+To reduce the processor load, it is recommended to
+<list type="bullet">
+
+<listitem>
+set the number of
+<link doc="../ngx_core_module.xml" id="worker_processes">worker processes</link>
+equal to the number of processors,
+</listitem>
+
+<listitem>
+enable the <link id="ssl_session_cache_shared">shared</link> session cache,
+</listitem>
+
+<listitem>
+disable the <link id="ssl_session_cache_builtin">built-in</link> session cache,
+</listitem>
+
+<listitem>
+and possibly increase the session <link id="ssl_session_timeout">lifetime</link>
+(by default, 5 minutes):
+</listitem>
+
+</list>
+
+<example>
+<emphasis>worker_processes auto;</emphasis>
+
+mail {
+
+    ...
+
+    server {
+        listen              993 ssl;
+
+        ssl_protocols       TLSv1.2 TLSv1.3;
+        ssl_ciphers         AES128-SHA:AES256-SHA:RC4-SHA:DES-CBC3-SHA:RC4-MD5;
+        ssl_certificate     /usr/local/nginx/conf/cert.pem;
+        ssl_certificate_key /usr/local/nginx/conf/cert.key;
+        <emphasis>ssl_session_cache   shared:SSL:10m;</emphasis>
+        <emphasis>ssl_session_timeout 10m;</emphasis>
+
+        ...
+    }
+</example>
+</para>
+
+</section>
+
+
+<section id="directives" name="Directives">
+
+<directive name="ssl">
+<syntax><literal>on</literal> | <literal>off</literal></syntax>
+<default>off</default>
+<context>mail</context>
+<context>server</context>
+
+<para>
+This directive was made obsolete in version 1.15.0
+and was removed in version 1.25.1.
+The <literal>ssl</literal> parameter
+of the <link doc="ngx_mail_core_module.xml" id="listen"/> directive
+should be used instead.
+</para>
+
+</directive>
+
+
+<directive name="ssl_certificate">
+<syntax><value>file</value></syntax>
+<default/>
+<context>mail</context>
+<context>server</context>
+
+<para>
+Specifies a <value>file</value> with the certificate in the PEM format
+for the given server.
+If intermediate certificates should be specified in addition to a primary
+certificate, they should be specified in the same file in the following
+order: the primary certificate comes first, then the intermediate certificates.
+A secret key in the PEM format may be placed in the same file.
+</para>
+
+<para>
+Since version 1.11.0,
+this directive can be specified multiple times
+to load certificates of different types, for example, RSA and ECDSA:
+<example>
+server {
+    listen              993 ssl;
+
+    ssl_certificate     example.com.rsa.crt;
+    ssl_certificate_key example.com.rsa.key;
+
+    ssl_certificate     example.com.ecdsa.crt;
+    ssl_certificate_key example.com.ecdsa.key;
+
+    ...
+}
+</example>
+<note>
+Only OpenSSL 1.0.2 or higher supports separate certificate chains
+for different certificates.
+With older versions, only one certificate chain can be used.
+</note>
+</para>
+
+<para id="ssl_certificate_data">
+The value
+<literal>data</literal>:<value>certificate</value>
+can be specified instead of the <value>file</value> (1.15.10),
+which loads a certificate without using intermediate files.
+Note that inappropriate use of this syntax may have its security implications,
+such as writing secret key data to
+<link doc="../ngx_core_module.xml" id="error_log">error log</link>.
+</para>
+
+</directive>
+
+
+<directive name="ssl_certificate_key">
+<syntax><value>file</value></syntax>
+<default/>
+<context>mail</context>
+<context>server</context>
+
+<para>
+Specifies a <value>file</value> with the secret key in the PEM format
+for the given server.
+</para>
+
+<para>
+The value
+<literal>engine</literal>:<value>name</value>:<value>id</value>
+can be specified instead of the <value>file</value> (1.7.9),
+which loads a secret key with a specified <value>id</value>
+from the OpenSSL engine <value>name</value>.
+</para>
+
+<para id="ssl_certificate_key_data">
+The value
+<literal>data</literal>:<value>key</value>
+can be specified instead of the <value>file</value> (1.15.10),
+which loads a secret key without using intermediate files.
+Note that inappropriate use of this syntax may have its security implications,
+such as writing secret key data to
+<link doc="../ngx_core_module.xml" id="error_log">error log</link>.
+</para>
+
+</directive>
+
+
+<directive name="ssl_ciphers">
+<syntax><value>ciphers</value></syntax>
+<default>HIGH:!aNULL:!MD5</default>
+<context>mail</context>
+<context>server</context>
+
+<para>
+Specifies the enabled ciphers.
+The ciphers are specified in the format understood by the
+OpenSSL library, for example:
+<example>
+ssl_ciphers ALL:!aNULL:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP;
+</example>
+</para>
+
+<para>
+The full list can be viewed using the
+“<command>openssl ciphers</command>” command.
+</para>
+
+<para>
+<note>
+The previous versions of nginx used
+<link doc="../http/configuring_https_servers.xml" id="compatibility">different</link>
+ciphers by default.
+</note>
+</para>
+
+</directive>
+
+
+<directive name="ssl_client_certificate">
+<syntax><value>file</value></syntax>
+<default/>
+<context>mail</context>
+<context>server</context>
+<appeared-in>1.7.11</appeared-in>
+
+<para>
+Specifies a <value>file</value> with trusted CA certificates in the PEM format
+used to <link id="ssl_verify_client">verify</link> client certificates.
+</para>
+
+<para>
+The list of certificates will be sent to clients.
+If this is not desired, the <link id="ssl_trusted_certificate"/>
+directive can be used.
+</para>
+
+</directive>
+
+
+<directive name="ssl_conf_command">
+<syntax><value>name</value> <value>value</value></syntax>
+<default/>
+<context>mail</context>
+<context>server</context>
+<appeared-in>1.19.4</appeared-in>
+
+<para>
+Sets arbitrary OpenSSL configuration
+<link url="https://www.openssl.org/docs/man1.1.1/man3/SSL_CONF_cmd.html">commands</link>.
+<note>
+The directive is supported when using OpenSSL 1.0.2 or higher.
+</note>
+</para>
+
+<para>
+Several <literal>ssl_conf_command</literal> directives
+can be specified on the same level:
+<example>
+ssl_conf_command Options PrioritizeChaCha;
+ssl_conf_command Ciphersuites TLS_CHACHA20_POLY1305_SHA256;
+</example>
+These directives are inherited from the previous configuration level
+if and only if there are no <literal>ssl_conf_command</literal> directives
+defined on the current level.
+</para>
+
+<para>
+<note>
+Note that configuring OpenSSL directly
+might result in unexpected behavior.
+</note>
+</para>
+
+</directive>
+
+
+<directive name="ssl_crl">
+<syntax><value>file</value></syntax>
+<default/>
+<context>mail</context>
+<context>server</context>
+<appeared-in>1.7.11</appeared-in>
+
+<para>
+Specifies a <value>file</value> with revoked certificates (CRL)
+in the PEM format used to <link id="ssl_verify_client">verify</link>
+client certificates.
+</para>
+
+</directive>
+
+
+<directive name="ssl_dhparam">
+<syntax><value>file</value></syntax>
+<default/>
+<context>mail</context>
+<context>server</context>
+<appeared-in>0.7.2</appeared-in>
+
+<para>
+Specifies a <value>file</value> with DH parameters for DHE ciphers.
+</para>
+
+<para>
+By default no parameters are set,
+and therefore DHE ciphers will not be used.
+<note>
+Prior to version 1.11.0, builtin parameters were used by default.
+</note>
+</para>
+
+</directive>
+
+
+<directive name="ssl_ecdh_curve">
+<syntax><value>curve</value></syntax>
+<default>auto</default>
+<context>mail</context>
+<context>server</context>
+<appeared-in>1.1.0</appeared-in>
+<appeared-in>1.0.6</appeared-in>
+
+<para>
+Specifies a <value>curve</value> for ECDHE ciphers.
+</para>
+
+<para>
+When using OpenSSL 1.0.2 or higher,
+it is possible to specify multiple curves (1.11.0), for example:
+<example>
+ssl_ecdh_curve prime256v1:secp384r1;
+</example>
+</para>
+
+<para>
+The special value <literal>auto</literal> (1.11.0) instructs nginx to use
+a list built into the OpenSSL library when using OpenSSL 1.0.2 or higher,
+or <literal>prime256v1</literal> with older versions.
+</para>
+
+<para>
+<note>
+Prior to version 1.11.0,
+the <literal>prime256v1</literal> curve was used by default.
+</note>
+</para>
+
+<para>
+<note>
+When using OpenSSL 1.0.2 or higher,
+this directive sets the list of curves supported by the server.
+Thus, in order for ECDSA certificates to work,
+it is important to include the curves used in the certificates.
+</note>
+</para>
+
+</directive>
+
+
+<directive name="ssl_password_file">
+<syntax><value>file</value></syntax>
+<default/>
+<context>mail</context>
+<context>server</context>
+<appeared-in>1.7.3</appeared-in>
+
+<para>
+Specifies a <value>file</value> with passphrases for
+<link id="ssl_certificate_key">secret keys</link>
+where each passphrase is specified on a separate line.
+Passphrases are tried in turn when loading the key.
+</para>
+
+<para>
+Example:
+<example>
+mail {
+    ssl_password_file /etc/keys/global.pass;
+    ...
+
+    server {
+        server_name mail1.example.com;
+        ssl_certificate_key /etc/keys/first.key;
+    }
+
+    server {
+        server_name mail2.example.com;
+
+        # named pipe can also be used instead of a file
+        ssl_password_file /etc/keys/fifo;
+        ssl_certificate_key /etc/keys/second.key;
+    }
+}
+</example>
+</para>
+
+</directive>
+
+
+<directive name="ssl_prefer_server_ciphers">
+<syntax><literal>on</literal> | <literal>off</literal></syntax>
+<default>off</default>
+<context>mail</context>
+<context>server</context>
+
+<para>
+Specifies that server ciphers should be preferred over client ciphers
+when the SSLv3 and TLS protocols are used.
+</para>
+
+</directive>
+
+
+<directive name="ssl_protocols">
+<syntax>
+    [<literal>SSLv2</literal>]
+    [<literal>SSLv3</literal>]
+    [<literal>TLSv1</literal>]
+    [<literal>TLSv1.1</literal>]
+    [<literal>TLSv1.2</literal>]
+    [<literal>TLSv1.3</literal>]</syntax>
+<default>TLSv1.2 TLSv1.3</default>
+<context>mail</context>
+<context>server</context>
+
+<para>
+Enables the specified protocols.
+<note>
+The <literal>TLSv1.1</literal> and <literal>TLSv1.2</literal> parameters
+(1.1.13, 1.0.12) work only when OpenSSL 1.0.1 or higher is used.
+</note>
+<note>
+The <literal>TLSv1.3</literal> parameter (1.13.0) works only when
+OpenSSL 1.1.1 or higher is used.
+</note>
+<note>
+The <literal>TLSv1.3</literal> parameter is used by default
+since 1.23.4.
+</note>
+</para>
+
+</directive>
+
+
+<directive name="ssl_session_cache">
+<syntax>
+    <literal>off</literal> |
+    <literal>none</literal> |
+    [<literal>builtin</literal>[:<value>size</value>]]
+    [<literal>shared</literal>:<value>name</value>:<value>size</value>]</syntax>
+<default>none</default>
+<context>mail</context>
+<context>server</context>
+
+<para>
+Sets the types and sizes of caches that store session parameters.
+A cache can be of any of the following types:
+<list type="tag">
+
+<tag-name><literal>off</literal></tag-name>
+<tag-desc>
+the use of a session cache is strictly prohibited:
+nginx explicitly tells a client that sessions may not be reused.
+</tag-desc>
+
+<tag-name><literal>none</literal></tag-name>
+<tag-desc>
+the use of a session cache is gently disallowed:
+nginx tells a client that sessions may be reused, but does not
+actually store session parameters in the cache.
+</tag-desc>
+
+<tag-name id="ssl_session_cache_builtin"><literal>builtin</literal></tag-name>
+<tag-desc>
+a cache built in OpenSSL; used by one worker process only.
+The cache size is specified in sessions.
+If size is not given, it is equal to 20480 sessions.
+Use of the built-in cache can cause memory fragmentation.
+</tag-desc>
+
+<tag-name id="ssl_session_cache_shared"><literal>shared</literal></tag-name>
+<tag-desc>
+a cache shared between all worker processes.
+The cache size is specified in bytes; one megabyte can store
+about 4000 sessions.
+Each shared cache should have an arbitrary name.
+A cache with the same name can be used in several
+servers.
+It is also used to automatically generate, store, and
+periodically rotate TLS session ticket keys (1.23.2)
+unless configured explicitly
+using the <link id="ssl_session_ticket_key"/> directive.
+</tag-desc>
+
+</list>
+</para>
+
+<para>
+Both cache types can be used simultaneously, for example:
+<example>
+ssl_session_cache builtin:1000 shared:SSL:10m;
+</example>
+but using only shared cache without the built-in cache should
+be more efficient.
+</para>
+
+</directive>
+
+
+<directive name="ssl_session_ticket_key">
+<syntax><value>file</value></syntax>
+<default/>
+<context>mail</context>
+<context>server</context>
+<appeared-in>1.5.7</appeared-in>
+
+<para>
+Sets a <value>file</value> with the secret key used to encrypt
+and decrypt TLS session tickets.
+The directive is necessary if the same key has to be shared between
+multiple servers.
+By default, a randomly generated key is used.
+</para>
+
+<para>
+If several keys are specified, only the first key is
+used to encrypt TLS session tickets.
+This allows configuring key rotation, for example:
+<example>
+ssl_session_ticket_key current.key;
+ssl_session_ticket_key previous.key;
+</example>
+</para>
+
+<para>
+The <value>file</value> must contain 80 or 48 bytes
+of random data and can be created using the following command:
+<example>
+openssl rand 80 > ticket.key
+</example>
+Depending on the file size either AES256 (for 80-byte keys, 1.11.8)
+or AES128 (for 48-byte keys) is used for encryption.
+</para>
+
+</directive>
+
+
+<directive name="ssl_session_tickets">
+<syntax><literal>on</literal> | <literal>off</literal></syntax>
+<default>on</default>
+<context>mail</context>
+<context>server</context>
+<appeared-in>1.5.9</appeared-in>
+
+<para>
+Enables or disables session resumption through
+<link url="https://datatracker.ietf.org/doc/html/rfc5077">TLS session tickets</link>.
+</para>
+
+</directive>
+
+
+<directive name="ssl_session_timeout">
+<syntax><value>time</value></syntax>
+<default>5m</default>
+<context>mail</context>
+<context>server</context>
+
+<para>
+Specifies a time during which a client may reuse the
+session parameters.
+</para>
+
+</directive>
+
+
+<directive name="ssl_trusted_certificate">
+<syntax><value>file</value></syntax>
+<default/>
+<context>mail</context>
+<context>server</context>
+<appeared-in>1.7.11</appeared-in>
+
+<para>
+Specifies a <value>file</value> with trusted CA certificates in the PEM format
+used to <link id="ssl_verify_client">verify</link> client certificates.
+</para>
+
+<para>
+In contrast to the certificate set by <link id="ssl_client_certificate"/>,
+the list of these certificates will not be sent to clients.
+</para>
+
+</directive>
+
+
+<directive name="ssl_verify_client">
+<syntax>
+    <literal>on</literal> | <literal>off</literal> |
+    <literal>optional</literal> | <literal>optional_no_ca</literal></syntax>
+<default>off</default>
+<context>mail</context>
+<context>server</context>
+<appeared-in>1.7.11</appeared-in>
+
+<para>
+Enables verification of client certificates.
+The verification result is passed in the
+<header>Auth-SSL-Verify</header> header of the
+<link doc="ngx_mail_auth_http_module.xml" id="auth_http">authentication</link>
+request.
+</para>
+
+<para>
+The <literal>optional</literal> parameter requests the client
+certificate and verifies it if the certificate is present.
+</para>
+
+<para>
+The <literal>optional_no_ca</literal> parameter
+requests the client
+certificate but does not require it to be signed by a trusted CA certificate.
+This is intended for the use in cases when a service that is external to nginx
+performs the actual certificate verification.
+The contents of the certificate is accessible through requests
+<link doc="ngx_mail_auth_http_module.xml"
+      id="auth_http_pass_client_cert">sent</link>
+to the authentication server.
+</para>
+
+</directive>
+
+
+<directive name="ssl_verify_depth">
+<syntax><value>number</value></syntax>
+<default>1</default>
+<context>mail</context>
+<context>server</context>
+<appeared-in>1.7.11</appeared-in>
+
+<para>
+Sets the verification depth in the client certificates chain.
+</para>
+
+</directive>
+
+
+<directive name="starttls">
+<syntax>
+  <literal>on</literal> |
+  <literal>off</literal> |
+  <literal>only</literal></syntax>
+<default>off</default>
+<context>mail</context>
+<context>server</context>
+
+<para>
+<list type="tag">
+
+<tag-name><literal>on</literal></tag-name>
+<tag-desc>
+allow usage of the <literal>STLS</literal> command for the POP3
+and the <literal>STARTTLS</literal> command for the IMAP and SMTP;
+</tag-desc>
+
+<tag-name><literal>off</literal></tag-name>
+<tag-desc>
+deny usage of the <literal>STLS</literal>
+and <literal>STARTTLS</literal> commands;
+</tag-desc>
+
+<tag-name><literal>only</literal></tag-name>
+<tag-desc>
+require preliminary TLS transition.
+</tag-desc>
+
+</list>
+</para>
+
+</directive>
+
+</section>
+
+</module>

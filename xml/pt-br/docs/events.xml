@@ -1,0 +1,95 @@
+<!--
+  Copyright (C) Igor Sysoev
+  Copyright (C) Nginx, Inc.
+  -->
+
+<!DOCTYPE article SYSTEM "../../../dtd/article.dtd">
+
+<article name="Connection processing methods"
+         link="/en/docs/events.html"
+         lang="en"
+         rev="6">
+
+<section>
+
+<para>
+nginx supports a variety of connection processing methods.
+The availability of a particular method depends on the platform used.
+On platforms that support several methods nginx will normally
+select the most efficient method automatically.
+However, if needed, a connection processing method can be selected
+explicitly with the
+<link doc="ngx_core_module.xml" id="use"/> directive.
+</para>
+
+<para>
+The following connection processing methods are supported:
+<list type="bullet">
+
+<listitem id="select">
+<para>
+<literal>select</literal>&mdash;standard method.
+The supporting module is built automatically on platforms that lack
+more efficient methods.
+The <literal>--with-select_module</literal> and
+<literal>--without-select_module</literal> configuration parameters
+can be used to forcibly enable or disable the build of this module.
+</para>
+</listitem>
+
+<listitem id="poll">
+<para>
+<literal>poll</literal>&mdash;standard method.
+The supporting module is built automatically on platforms that lack
+more efficient methods.
+The <literal>--with-poll_module</literal> and
+<literal>--without-poll_module</literal> configuration parameters
+can be used to forcibly enable or disable the build of this module.
+</para>
+</listitem>
+
+<listitem id="kqueue">
+<para>
+<literal>kqueue</literal>&mdash;efficient method used on
+FreeBSD 4.1+, OpenBSD 2.9+, NetBSD 2.0, and macOS.
+</para>
+</listitem>
+
+<listitem id="epoll">
+<para>
+<literal>epoll</literal>&mdash;efficient method used on
+Linux 2.6+.
+<note>
+The <literal>EPOLLRDHUP</literal> (Linux 2.6.17, glibc 2.8)
+and <literal>EPOLLEXCLUSIVE</literal> (Linux 4.5, glibc 2.24)
+flags are supported since 1.11.3.
+</note>
+<note>
+Some older distributions like SuSE 8.2 provide patches
+that add epoll support to 2.4 kernels.
+</note>
+</para>
+</listitem>
+
+<listitem id="devpoll">
+<para>
+<literal>/dev/poll</literal>&mdash;efficient method used on
+Solaris 7 11/99+, HP/UX 11.22+ (eventport), IRIX 6.5.15+,
+and Tru64 UNIX 5.1A+.
+</para>
+</listitem>
+
+<listitem id="eventport">
+<para>
+<literal>eventport</literal>&mdash;event ports, method
+used on Solaris 10+ (due to known issues,
+it is recommended using the <literal>/dev/poll</literal> method instead).
+</para>
+</listitem>
+
+</list>
+</para>
+
+</section>
+
+</article>

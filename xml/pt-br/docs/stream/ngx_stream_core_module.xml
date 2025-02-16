@@ -1,0 +1,984 @@
+<?xml version="1.0"?>
+
+<!--
+  Copyright (C) Nginx, Inc.
+  -->
+
+<!DOCTYPE module SYSTEM "../../../../dtd/module.dtd">
+
+<module name="Module ngx_stream_core_module"
+        link="/en/docs/stream/ngx_stream_core_module.html"
+        lang="en"
+        rev="40">
+
+<section id="summary">
+
+<para>
+The <literal>ngx_stream_core_module</literal> module
+is available since version 1.9.0.
+This module is not built by default, it should be enabled with the
+<literal>--with-stream</literal>
+configuration parameter.
+</para>
+
+</section>
+
+
+<section id="example" name="Example Configuration">
+
+<para>
+<example>
+worker_processes auto;
+
+error_log /var/log/nginx/error.log info;
+
+events {
+    worker_connections  1024;
+}
+
+stream {
+    upstream backend {
+        hash $remote_addr consistent;
+
+        server backend1.example.com:12345 weight=5;
+        server 127.0.0.1:12345            max_fails=3 fail_timeout=30s;
+        server unix:/tmp/backend3;
+    }
+
+    upstream dns {
+       server 192.168.0.1:53535;
+       server dns.example.com:53;
+    }
+
+    server {
+        listen 12345;
+        proxy_connect_timeout 1s;
+        proxy_timeout 3s;
+        proxy_pass backend;
+    }
+
+    server {
+        listen 127.0.0.1:53 udp reuseport;
+        proxy_timeout 20s;
+        proxy_pass dns;
+    }
+
+    server {
+        listen [::1]:12345;
+        proxy_pass unix:/tmp/stream.socket;
+    }
+}
+</example>
+</para>
+
+</section>
+
+
+<section id="directives" name="Directives">
+
+<directive name="listen">
+<syntax>
+    <value>address</value>:<value>port</value>
+    [<literal>default_server</literal>]
+    [<literal>ssl</literal>]
+    [<literal>udp</literal>]
+    [<literal>proxy_protocol</literal>]
+    [<literal>setfib</literal>=<value>number</value>]
+    [<literal>fastopen</literal>=<value>number</value>]
+    [<literal>backlog</literal>=<value>number</value>]
+    [<literal>rcvbuf</literal>=<value>size</value>]
+    [<literal>sndbuf</literal>=<value>size</value>]
+    [<literal>accept_filter</literal>=<value>filter</value>]
+    [<literal>deferred</literal>]
+    [<literal>bind</literal>]
+    [<literal>ipv6only</literal>=<literal>on</literal>|<literal>off</literal>]
+    [<literal>reuseport</literal>]
+    [<literal>so_keepalive</literal>=<literal>on</literal>|<literal>off</literal>|[<value>keepidle</value>]:[<value>keepintvl</value>]:[<value>keepcnt</value>]]</syntax>
+<default/>
+<context>server</context>
+
+<para>
+Sets the <value>address</value> and <value>port</value> for the socket
+on which the server will accept connections.
+It is possible to specify just the port.
+The address can also be a hostname, for example:
+<example>
+listen 127.0.0.1:12345;
+listen *:12345;
+listen 12345;     # same as *:12345
+listen localhost:12345;
+</example>
+IPv6 addresses are specified in square brackets:
+<example>
+listen [::1]:12345;
+listen [::]:12345;
+</example>
+UNIX-domain sockets are specified with the “<literal>unix:</literal>”
+prefix:
+<example>
+listen unix:/var/run/nginx.sock;
+</example>
+</para>
+
+<para id="listen_port_range">
+Port ranges (1.15.10) are specified with the
+first and last port separated by a hyphen:
+<example>
+listen 127.0.0.1:12345-12399;
+listen 12345-12399;
+</example>
+</para>
+
+<para>
+The <literal>default_server</literal> parameter, if present,
+will cause the server to become the default server for the specified
+<value>address</value>:<value>port</value> pair (1.25.5).
+If none of the directives have the <literal>default_server</literal>
+parameter then the first server with the
+<value>address</value>:<value>port</value> pair will be
+the default server for this pair.
+</para>
+
+<para>
+The <literal>ssl</literal> parameter allows specifying that all
+connections accepted on this port should work in SSL mode.
+</para>
+
+<para id="udp">
+The <literal>udp</literal> parameter configures a listening socket
+for working with datagrams (1.9.13).
+In order to handle packets from the same address and port in the same session,
+the <link id="reuseport"><literal>reuseport</literal></link> parameter
+should also be specified.
+</para>
+
+<para id="proxy_protocol">
+The <literal>proxy_protocol</literal> parameter (1.11.4)
+allows specifying that all connections accepted on this port should use the
+<link url="http://www.haproxy.org/download/1.8/doc/proxy-protocol.txt">PROXY
+protocol</link>.
+<note>
+The PROXY protocol version 2 is supported since version 1.13.11.
+</note>
+</para>
+
+<para>
+The <literal>listen</literal> directive
+can have several additional parameters specific to socket-related system calls.
+These parameters can be specified in any
+<literal>listen</literal> directive, but only once for a given
+<value>address</value>:<value>port</value> pair.
+<list type="tag">
+
+<tag-name>
+<literal>setfib</literal>=<value>number</value>
+</tag-name>
+<tag-desc>
+this parameter (1.25.5) sets the associated routing table, FIB
+(the <c-def>SO_SETFIB</c-def> option) for the listening socket.
+This currently works only on FreeBSD.
+</tag-desc>
+
+<tag-name>
+<literal>fastopen</literal>=<value>number</value>
+</tag-name>
+<tag-desc>
+enables
+“<link url="http://en.wikipedia.org/wiki/TCP_Fast_Open">TCP Fast Open</link>”
+for the listening socket (1.21.0) and
+<link url="https://datatracker.ietf.org/doc/html/rfc7413#section-5.1">limits</link>
+the maximum length for the queue of connections that have not yet completed
+the three-way handshake.
+<note>
+Do not enable this feature unless the server can handle
+receiving the
+<link url="https://datatracker.ietf.org/doc/html/rfc7413#section-6.1">
+same SYN packet with data</link> more than once.
+</note>
+</tag-desc>
+
+<tag-name>
+<literal>backlog</literal>=<value>number</value>
+</tag-name>
+<tag-desc>
+sets the <literal>backlog</literal> parameter in the
+<c-func>listen</c-func> call that limits
+the maximum length for the queue of pending connections (1.9.2).
+By default,
+<literal>backlog</literal> is set to -1 on FreeBSD, DragonFly BSD, and macOS,
+and to 511 on other platforms.
+</tag-desc>
+
+<tag-name>
+<literal>rcvbuf</literal>=<value>size</value>
+</tag-name>
+<tag-desc>
+sets the receive buffer size
+(the <c-def>SO_RCVBUF</c-def> option) for the listening socket (1.11.13).
+</tag-desc>
+
+<tag-name>
+<literal>sndbuf</literal>=<value>size</value>
+</tag-name>
+<tag-desc>
+sets the send buffer size
+(the <c-def>SO_SNDBUF</c-def> option) for the listening socket (1.11.13).
+</tag-desc>
+
+<tag-name>
+<literal>accept_filter</literal>=<value>filter</value>
+</tag-name>
+<tag-desc>
+sets the name of accept filter
+(the <c-def>SO_ACCEPTFILTER</c-def> option) for the listening socket
+that filters incoming connections before passing them to
+<c-func>accept</c-func> (1.25.5).
+This works only on FreeBSD and NetBSD 5.0+.
+Possible values are
+<link url="http://man.freebsd.org/accf_data">dataready</link>
+and
+<link url="http://man.freebsd.org/accf_http">httpready</link>.
+</tag-desc>
+
+<tag-name>
+<literal>deferred</literal>
+</tag-name>
+<tag-desc>
+instructs to use a deferred <c-func>accept</c-func>
+(the <c-def>TCP_DEFER_ACCEPT</c-def> socket option) on Linux (1.25.5).
+</tag-desc>
+
+<tag-name>
+<literal>bind</literal>
+</tag-name>
+<tag-desc>
+this parameter instructs to make a separate <c-func>bind</c-func>
+call for a given address:port pair.
+The fact is that if there are several <literal>listen</literal> directives with
+the same port but different addresses, and one of the
+<literal>listen</literal> directives listens on all addresses
+for the given port (<literal>*:</literal><value>port</value>), nginx will
+<c-func>bind</c-func> only to <literal>*:</literal><value>port</value>.
+It should be noted that the <c-func>getsockname</c-func> system call will be
+made in this case to determine the address that accepted the connection.
+If the <literal>setfib</literal>,
+<literal>fastopen</literal>,
+<literal>backlog</literal>, <literal>rcvbuf</literal>,
+<literal>sndbuf</literal>, <literal>accept_filter</literal>,
+<literal>deferred</literal>, <literal>ipv6only</literal>,
+<literal>reuseport</literal>,
+or <literal>so_keepalive</literal> parameters
+are used then for a given
+<value>address</value>:<value>port</value> pair
+a separate <c-func>bind</c-func> call will always be made.
+</tag-desc>
+
+<tag-name>
+<literal>ipv6only</literal>=<literal>on</literal>|<literal>off</literal>
+</tag-name>
+<tag-desc>
+this parameter determines
+(via the <c-def>IPV6_V6ONLY</c-def> socket option)
+whether an IPv6 socket listening on a wildcard address <literal>[::]</literal>
+will accept only IPv6 connections or both IPv6 and IPv4 connections.
+This parameter is turned on by default.
+It can only be set once on start.
+</tag-desc>
+
+<tag-name id="reuseport">
+<literal>reuseport</literal>
+</tag-name>
+<tag-desc>
+this parameter (1.9.1) instructs to create an individual listening socket
+for each worker process
+(using the
+<c-def>SO_REUSEPORT</c-def> socket option on Linux 3.9+ and DragonFly BSD,
+or <c-def>SO_REUSEPORT_LB</c-def> on FreeBSD 12+), allowing a kernel
+to distribute incoming connections between worker processes.
+This currently works only on Linux 3.9+, DragonFly BSD,
+and FreeBSD 12+ (1.15.1).
+<note>
+Inappropriate use of this option may have its security
+<link url="http://man7.org/linux/man-pages/man7/socket.7.html">implications</link>.
+</note>
+</tag-desc>
+
+<tag-name>
+<literal>so_keepalive</literal>=<literal>on</literal>|<literal>off</literal>|[<value>keepidle</value>]:[<value>keepintvl</value>]:[<value>keepcnt</value>]
+</tag-name>
+<tag-desc>
+this parameter configures the “TCP keepalive” behavior
+for the listening socket.
+If this parameter is omitted then the operating system’s settings will be
+in effect for the socket.
+If it is set to the value “<literal>on</literal>”, the
+<c-def>SO_KEEPALIVE</c-def> option is turned on for the socket.
+If it is set to the value “<literal>off</literal>”, the
+<c-def>SO_KEEPALIVE</c-def> option is turned off for the socket.
+Some operating systems support setting of TCP keepalive parameters on
+a per-socket basis using the <c-def>TCP_KEEPIDLE</c-def>,
+<c-def>TCP_KEEPINTVL</c-def>, and <c-def>TCP_KEEPCNT</c-def> socket options.
+On such systems (currently, Linux 2.4+, NetBSD 5+, and
+FreeBSD 9.0-STABLE), they can be configured
+using the <value>keepidle</value>, <value>keepintvl</value>, and
+<value>keepcnt</value> parameters.
+One or two parameters may be omitted, in which case the system default setting
+for the corresponding socket option will be in effect.
+For example,
+<example>so_keepalive=30m::10</example>
+will set the idle timeout (<c-def>TCP_KEEPIDLE</c-def>) to 30 minutes,
+leave the probe interval (<c-def>TCP_KEEPINTVL</c-def>) at its system default,
+and set the probes count (<c-def>TCP_KEEPCNT</c-def>) to 10 probes.
+</tag-desc>
+
+</list>
+</para>
+
+<para>
+<note>
+Before version 1.25.5, different servers must listen on different
+<value>address</value>:<value>port</value> pairs.
+</note>
+</para>
+
+</directive>
+
+
+<directive name="preread_buffer_size">
+<syntax><value>size</value></syntax>
+<default>16k</default>
+<context>stream</context>
+<context>server</context>
+<appeared-in>1.11.5</appeared-in>
+
+<para>
+Specifies a <value>size</value> of the
+<link doc="stream_processing.xml" id="preread_phase">preread</link> buffer.
+</para>
+
+</directive>
+
+
+<directive name="preread_timeout">
+<syntax><value>timeout</value></syntax>
+<default>30s</default>
+<context>stream</context>
+<context>server</context>
+<appeared-in>1.11.5</appeared-in>
+
+<para>
+Specifies a <value>timeout</value> of the
+<link doc="stream_processing.xml" id="preread_phase">preread</link> phase.
+</para>
+
+</directive>
+
+
+<directive name="proxy_protocol_timeout">
+<syntax><value>timeout</value></syntax>
+<default>30s</default>
+<context>stream</context>
+<context>server</context>
+<appeared-in>1.11.4</appeared-in>
+
+<para>
+Specifies a <value>timeout</value> for
+reading the PROXY protocol header to complete.
+If no entire header is transmitted within this time,
+the connection is closed.
+</para>
+
+</directive>
+
+
+<directive name="resolver">
+<syntax>
+    <value>address</value> ...
+    [<literal>valid</literal>=<value>time</value>]
+    [<literal>ipv4</literal>=<literal>on</literal>|<literal>off</literal>]
+    [<literal>ipv6</literal>=<literal>on</literal>|<literal>off</literal>]
+    [<literal>status_zone</literal>=<value>zone</value>]</syntax>
+<default/>
+<context>stream</context>
+<context>server</context>
+<appeared-in>1.11.3</appeared-in>
+
+<para>
+Configures name servers used to resolve names of upstream servers
+into addresses, for example:
+<example>
+resolver 127.0.0.1 [::1]:5353;
+</example>
+The address can be specified as a domain name or IP address,
+with an optional port.
+If port is not specified, the port 53 is used.
+Name servers are queried in a round-robin fashion.
+</para>
+
+<para id="resolver_ipv6">
+By default, nginx will look up both IPv4 and IPv6 addresses while resolving.
+If looking up of IPv4 or IPv6 addresses is not desired,
+the <literal>ipv4=off</literal> (1.23.1) or
+the <literal>ipv6=off</literal> parameter can be specified.
+</para>
+
+<para id="resolver_valid">
+By default, nginx caches answers using the TTL value of a response.
+The optional <literal>valid</literal> parameter allows overriding it:
+<example>
+resolver 127.0.0.1 [::1]:5353 valid=30s;
+</example>
+<note>
+To prevent DNS spoofing, it is recommended
+configuring DNS servers in a properly secured trusted local network.
+</note>
+</para>
+
+<para id="resolver_status_zone">
+The optional <literal>status_zone</literal> parameter (1.17.1)
+enables
+<link doc="../http/ngx_http_api_module.xml" id="resolvers_">collection</link>
+of DNS server statistics of requests and responses
+in the specified <value>zone</value>.
+The parameter is available as part of our
+<commercial_version>commercial subscription</commercial_version>.
+</para>
+
+<para>
+<note>
+Before version 1.11.3, this directive was available as part of our
+<commercial_version>commercial subscription</commercial_version>.
+</note>
+</para>
+
+</directive>
+
+
+<directive name="resolver_timeout">
+<syntax><value>time</value></syntax>
+<default>30s</default>
+<context>stream</context>
+<context>server</context>
+<appeared-in>1.11.3</appeared-in>
+
+<para>
+Sets a timeout for name resolution, for example:
+<example>
+resolver_timeout 5s;
+</example>
+<note>
+Before version 1.11.3, this directive was available as part of our
+<commercial_version>commercial subscription</commercial_version>.
+</note>
+</para>
+
+</directive>
+
+
+<directive name="server">
+<syntax block="yes"/>
+<default/>
+<context>stream</context>
+
+<para>
+Sets the configuration for a virtual server.
+There is no clear separation between IP-based (based on the IP address)
+and name-based (based on the
+<link url="http://en.wikipedia.org/wiki/Server_Name_Indication">TLS
+Server Name Indication extension</link> (SNI, RFC 6066)) (1.25.5)
+virtual servers.
+Instead, the <link id="listen"/> directives describe all
+addresses and ports that should accept connections for the server, and the
+<link id="server_name"/> directive lists all server names.
+</para>
+
+</directive>
+
+
+<directive name="server_name">
+<syntax><value>name</value> ...</syntax>
+<default>""</default>
+<context>server</context>
+<appeared-in>1.25.5</appeared-in>
+
+<para>
+Sets names of a virtual server, for example:
+<example>
+server {
+    server_name example.com www.example.com;
+}
+</example>
+</para>
+
+<para>
+The first name becomes the primary server name.
+</para>
+
+<para>
+Server names can include an asterisk (“<literal>*</literal>”)
+replacing the first or last part of a name:
+<example>
+server {
+    server_name example.com *.example.com www.example.*;
+}
+</example>
+Such names are called wildcard names.
+</para>
+
+<para>
+The first two of the names mentioned above can be combined in one:
+<example>
+server {
+    server_name .example.com;
+}
+</example>
+</para>
+
+<para>
+It is also possible to use regular expressions in server names,
+preceding the name with a tilde (“<literal>~</literal>”):
+<example>
+server {
+    server_name www.example.com ~^www\d+\.example\.com$;
+}
+</example>
+</para>
+
+<para>
+Regular expressions can contain captures that can later
+be used in other directives:
+<example>
+server {
+    server_name ~^(www\.)?(.+)$;
+
+    proxy_pass www.$2:12345;
+}
+</example>
+</para>
+
+<para>
+Named captures in regular expressions create variables
+that can later be used in other directives:
+<example>
+server {
+    server_name ~^(www\.)?(?&lt;domain&gt;.+)$;
+
+    proxy_pass www.$domain:12345;
+}
+</example>
+</para>
+
+<para>
+If the directive’s parameter is set to “<var>$hostname</var>”, the
+machine’s hostname is inserted.
+</para>
+
+<para>
+During searching for a virtual server by name,
+if the name matches more than one of the specified variants,
+(e.g. both a wildcard name and regular expression match), the first matching
+variant will be chosen, in the following order of priority:
+<list type="enum">
+
+<listitem>
+the exact name
+</listitem>
+
+<listitem>
+the longest wildcard name starting with an asterisk,
+e.g. “<literal>*.example.com</literal>”
+</listitem>
+
+<listitem>
+the longest wildcard name ending with an asterisk,
+e.g. “<literal>mail.*</literal>”
+</listitem>
+
+<listitem>
+the first matching regular expression
+(in order of appearance in the configuration file)
+</listitem>
+
+</list>
+</para>
+
+</directive>
+
+
+<directive name="server_names_hash_bucket_size">
+<syntax><value>size</value></syntax>
+<default>32|64|128</default>
+<context>stream</context>
+<appeared-in>1.25.5</appeared-in>
+
+<para>
+Sets the bucket size for the server names hash tables.
+The default value depends on the size of the processor’s cache line.
+The details of setting up hash tables are provided in a separate
+<link doc="../hash.xml">document</link>.
+</para>
+
+</directive>
+
+
+<directive name="server_names_hash_max_size">
+<syntax><value>size</value></syntax>
+<default>512</default>
+<context>stream</context>
+<appeared-in>1.25.5</appeared-in>
+
+<para>
+Sets the maximum <value>size</value> of the server names hash tables.
+The details of setting up hash tables are provided in a separate
+<link doc="../hash.xml">document</link>.
+</para>
+
+</directive>
+
+
+<directive name="stream">
+<syntax block="yes"/>
+<default/>
+<context>main</context>
+
+<para>
+Provides the configuration file context in which the stream server directives
+are specified.
+</para>
+
+</directive>
+
+
+<directive name="tcp_nodelay">
+<syntax><literal>on</literal> | <literal>off</literal></syntax>
+<default>on</default>
+<context>stream</context>
+<context>server</context>
+<appeared-in>1.9.4</appeared-in>
+
+<para>
+Enables or disables the use of the <c-def>TCP_NODELAY</c-def> option.
+The option is enabled for both client and proxied server connections.
+</para>
+
+</directive>
+
+
+<directive name="variables_hash_bucket_size">
+<syntax><value>size</value></syntax>
+<default>64</default>
+<context>stream</context>
+<appeared-in>1.11.2</appeared-in>
+
+<para>
+Sets the bucket size for the variables hash table.
+The details of setting up hash tables are provided in a separate
+<link doc="../hash.xml">document</link>.
+</para>
+
+</directive>
+
+
+<directive name="variables_hash_max_size">
+<syntax><value>size</value></syntax>
+<default>1024</default>
+<context>stream</context>
+<appeared-in>1.11.2</appeared-in>
+
+<para>
+Sets the maximum <value>size</value> of the variables hash table.
+The details of setting up hash tables are provided in a separate
+<link doc="../hash.xml">document</link>.
+</para>
+
+</directive>
+
+</section>
+
+
+<section id="variables" name="Embedded Variables">
+
+<para>
+The <literal>ngx_stream_core_module</literal> module supports variables
+since 1.11.2.
+<list type="tag">
+
+<tag-name id="var_binary_remote_addr"><var>$binary_remote_addr</var></tag-name>
+<tag-desc>
+client address in a binary form, value’s length is always 4 bytes
+for IPv4 addresses or 16 bytes for IPv6 addresses
+</tag-desc>
+
+<tag-name id="var_bytes_received"><var>$bytes_received</var></tag-name>
+<tag-desc>
+number of bytes received from a client (1.11.4)
+</tag-desc>
+
+<tag-name id="var_bytes_sent"><var>$bytes_sent</var></tag-name>
+<tag-desc>
+number of bytes sent to a client
+</tag-desc>
+
+<tag-name id="var_connection"><var>$connection</var></tag-name>
+<tag-desc>
+connection serial number
+</tag-desc>
+
+<tag-name id="var_hostname"><var>$hostname</var></tag-name>
+<tag-desc>
+host name
+</tag-desc>
+
+<tag-name id="var_msec"><var>$msec</var></tag-name>
+<tag-desc>
+current time in seconds with the milliseconds resolution
+</tag-desc>
+
+<tag-name id="var_nginx_version"><var>$nginx_version</var></tag-name>
+<tag-desc>
+nginx version
+</tag-desc>
+
+<tag-name id="var_pid"><var>$pid</var></tag-name>
+<tag-desc>
+PID of the worker process
+</tag-desc>
+
+<tag-name id="var_protocol"><var>$protocol</var></tag-name>
+<tag-desc>
+protocol used to communicate with the client:
+<literal>TCP</literal> or <literal>UDP</literal> (1.11.4)
+</tag-desc>
+
+<tag-name id="var_proxy_protocol_addr"><var>$proxy_protocol_addr</var></tag-name>
+<tag-desc>
+client address from the PROXY protocol header (1.11.4)
+<para>
+The PROXY protocol must be previously enabled by setting the
+<literal>proxy_protocol</literal> parameter
+in the <link id="listen"/> directive.
+</para>
+</tag-desc>
+
+<tag-name id="var_proxy_protocol_port"><var>$proxy_protocol_port</var></tag-name>
+<tag-desc>
+client port from the PROXY protocol header (1.11.4)
+<para>
+The PROXY protocol must be previously enabled by setting the
+<literal>proxy_protocol</literal> parameter
+in the <link id="listen"/> directive.
+</para>
+</tag-desc>
+
+<tag-name id="var_proxy_protocol_server_addr"><var>$proxy_protocol_server_addr</var></tag-name>
+<tag-desc>
+server address from the PROXY protocol header (1.17.6)
+<para>
+The PROXY protocol must be previously enabled by setting the
+<literal>proxy_protocol</literal> parameter
+in the <link id="listen"/> directive.
+</para>
+</tag-desc>
+
+<tag-name id="var_proxy_protocol_server_port"><var>$proxy_protocol_server_port</var></tag-name>
+<tag-desc>
+server port from the PROXY protocol header (1.17.6)
+<para>
+The PROXY protocol must be previously enabled by setting the
+<literal>proxy_protocol</literal> parameter
+in the <link id="listen"/> directive.
+</para>
+</tag-desc>
+
+<tag-name id="var_proxy_protocol_tlv_"><var>$proxy_protocol_tlv_</var><value>name</value></tag-name>
+<tag-desc>
+TLV from the PROXY Protocol header (1.23.2).
+The <literal>name</literal> can be a TLV type name or its numeric value.
+In the latter case, the value is hexadecimal
+and should be prefixed with <literal>0x</literal>:
+
+<example>
+$proxy_protocol_tlv_alpn
+$proxy_protocol_tlv_0x01
+</example>
+SSL TLVs can also be accessed by TLV type name or its numeric value,
+both prefixed by <literal>ssl_</literal>:
+<example>
+$proxy_protocol_tlv_ssl_version
+$proxy_protocol_tlv_ssl_0x21
+</example>
+
+<para>
+The following TLV type names are supported:
+<list type="bullet">
+
+<listitem>
+<literal>alpn</literal> (<literal>0x01</literal>)&mdash;
+upper layer protocol used over the connection
+</listitem>
+
+<listitem>
+<literal>authority</literal> (<literal>0x02</literal>)&mdash;
+host name value passed by the client
+</listitem>
+
+<listitem>
+<literal>unique_id</literal> (<literal>0x05</literal>)&mdash;
+unique connection id
+</listitem>
+
+<listitem>
+<literal>netns</literal> (<literal>0x30</literal>)&mdash;
+name of the namespace
+</listitem>
+
+<listitem>
+<literal>ssl</literal> (<literal>0x20</literal>)&mdash;
+binary SSL TLV structure
+</listitem>
+
+</list>
+</para>
+
+<para>
+The following SSL TLV type names are supported:
+<list type="bullet">
+
+<listitem>
+<literal>ssl_version</literal> (<literal>0x21</literal>)&mdash;
+SSL version used in client connection
+</listitem>
+
+<listitem>
+<literal>ssl_cn</literal> (<literal>0x22</literal>)&mdash;
+SSL certificate Common Name
+</listitem>
+
+<listitem>
+<literal>ssl_cipher</literal> (<literal>0x23</literal>)&mdash;
+name of the used cipher
+</listitem>
+
+<listitem>
+<literal>ssl_sig_alg</literal> (<literal>0x24</literal>)&mdash;
+algorithm used to sign the certificate
+</listitem>
+
+<listitem>
+<literal>ssl_key_alg</literal> (<literal>0x25</literal>)&mdash;
+public-key algorithm
+</listitem>
+
+</list>
+</para>
+
+<para>
+Also, the following special SSL TLV type name is supported:
+<list type="bullet">
+
+<listitem>
+<literal>ssl_verify</literal>&mdash;
+client SSL certificate verification result,
+zero if the client presented a certificate
+and it was successfully verified, and non-zero otherwise
+</listitem>
+
+</list>
+</para>
+
+<para>
+The PROXY protocol must be previously enabled by setting the
+<literal>proxy_protocol</literal> parameter
+in the <link id="listen"/> directive.
+</para>
+</tag-desc>
+
+<tag-name id="var_remote_addr"><var>$remote_addr</var></tag-name>
+<tag-desc>
+client address
+</tag-desc>
+
+<tag-name id="var_remote_port"><var>$remote_port</var></tag-name>
+<tag-desc>
+client port
+</tag-desc>
+
+<tag-name id="var_server_addr"><var>$server_addr</var></tag-name>
+<tag-desc>
+an address of the server which accepted a connection
+<para>
+Computing a value of this variable usually requires one system call.
+To avoid a system call, the <link id="listen"/> directives
+must specify addresses and use the <literal>bind</literal> parameter.
+</para>
+</tag-desc>
+
+<tag-name id="var_server_port"><var>$server_port</var></tag-name>
+<tag-desc>
+port of the server which accepted a connection
+</tag-desc>
+
+<tag-name id="var_session_time"><var>$session_time</var></tag-name>
+<tag-desc>
+session duration in seconds with a milliseconds resolution
+(1.11.4);
+</tag-desc>
+
+<tag-name id="var_status"><var>$status</var></tag-name>
+<tag-desc>
+session status (1.11.4), can be one of the following:
+<list type="tag">
+
+<tag-name><literal>200</literal></tag-name>
+<tag-desc>
+session completed successfully
+</tag-desc>
+
+<tag-name><literal>400</literal></tag-name>
+<tag-desc>
+client data could not be parsed, for example,
+the <link id="proxy_protocol">PROXY protocol</link> header
+</tag-desc>
+
+<tag-name><literal>403</literal></tag-name>
+<tag-desc>
+access forbidden, for example, when access is limited for
+<link doc="ngx_stream_access_module.xml">certain client addresses</link>
+</tag-desc>
+
+<tag-name><literal>500</literal></tag-name>
+<tag-desc>
+internal server error
+</tag-desc>
+
+<tag-name><literal>502</literal></tag-name>
+<tag-desc>
+bad gateway, for example,
+if an upstream server could not be selected or reached.
+</tag-desc>
+
+<tag-name><literal>503</literal></tag-name>
+<tag-desc>
+service unavailable, for example, when access is limited by the
+<link doc="ngx_stream_limit_conn_module.xml">number of connections</link>
+</tag-desc>
+
+</list>
+</tag-desc>
+
+<tag-name id="var_time_iso8601"><var>$time_iso8601</var></tag-name>
+<tag-desc>
+local time in the ISO 8601 standard format
+</tag-desc>
+
+<tag-name id="var_time_local"><var>$time_local</var></tag-name>
+<tag-desc>
+local time in the Common Log Format
+</tag-desc>
+
+</list>
+</para>
+
+</section>
+
+</module>

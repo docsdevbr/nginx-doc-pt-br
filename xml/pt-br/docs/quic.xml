@@ -1,0 +1,251 @@
+<!--
+  Copyright (C) Nginx, Inc.
+  -->
+
+<!DOCTYPE article SYSTEM "../../../dtd/article.dtd">
+
+<article name="Support for QUIC and HTTP/3"
+         link="/en/docs/quic.html"
+         lang="en"
+         rev="2">
+
+<section>
+
+<para>
+Support for
+<link url="https://datatracker.ietf.org/doc/html/rfc9000">QUIC</link>
+and
+<link url="https://datatracker.ietf.org/doc/html/rfc9114">HTTP/3</link>
+protocols is available since 1.25.0.
+Also, since 1.25.0, the QUIC and HTTP/3 support is available in
+Linux <link doc="../linux_packages.xml">binary packages</link>.
+</para>
+
+<para>
+<note>
+The QUIC and HTTP/3 support is experimental, caveat emptor applies.
+</note>
+</para>
+
+</section>
+
+
+<section id="building" name="Building from sources">
+
+<para>
+The build is configured using the <command>configure</command> command.
+Please refer to <link doc="configure.xml"/> for details.
+</para>
+
+<para>
+When configuring nginx, it is possible to enable QUIC and HTTP/3 using the
+<link doc="configure.xml" id="http_v3_module"><literal>--with-http_v3_module</literal></link>
+configuration parameter.
+</para>
+
+<para>
+An SSL library that provides QUIC support is recommended to build nginx, such as
+<link url="https://boringssl.googlesource.com/boringssl">BoringSSL</link>,
+<link url="https://www.libressl.org">LibreSSL</link>, or
+<link url="https://github.com/quictls/openssl">QuicTLS</link>.
+Otherwise, the <link url="https://openssl.org">OpenSSL</link>
+compatibility layer will be used that does not support
+<link doc="http/ngx_http_ssl_module.xml" id="ssl_early_data">early data</link>.
+</para>
+
+<para>
+Use the following command to configure nginx with
+<link url="https://boringssl.googlesource.com/boringssl">BoringSSL</link>:
+<programlisting>
+./configure
+    --with-debug
+    --with-http_v3_module
+    --with-cc-opt="-I../boringssl/include"
+    --with-ld-opt="-L../boringssl/build/ssl
+                   -L../boringssl/build/crypto"
+</programlisting>
+</para>
+
+<para>
+Alternatively, nginx can be configured with
+<link url="https://github.com/quictls/openssl">QuicTLS</link>:
+<programlisting>
+./configure
+    --with-debug
+    --with-http_v3_module
+    --with-cc-opt="-I../quictls/build/include"
+    --with-ld-opt="-L../quictls/build/lib"
+</programlisting>
+</para>
+
+<para>
+Alternatively, nginx can be configured with a modern version of
+<link url="https://www.libressl.org">LibreSSL</link>:
+<programlisting>
+./configure
+    --with-debug
+    --with-http_v3_module
+    --with-cc-opt="-I../libressl/build/include"
+    --with-ld-opt="-L../libressl/build/lib"
+</programlisting>
+</para>
+
+<para>
+After configuration,
+nginx is compiled and installed using <command>make</command>.
+</para>
+
+</section>
+
+
+<section id="configuration" name="Configuration">
+
+<para>
+The <link doc="http/ngx_http_core_module.xml" id="listen"/> directive in
+<link doc="http/ngx_http_core_module.xml">ngx_http_core_module</link>
+module got a new parameter
+<link doc="http/ngx_http_core_module.xml" id="quic">quic</link>
+which enables HTTP/3 over QUIC on the specified port.
+</para>
+
+<para>
+Along with the <literal>quic</literal> parameter
+it is also possible to specify the
+<link doc="http/ngx_http_core_module.xml" id="reuseport">reuseport</link>
+parameter to make it work properly with multiple workers.
+</para>
+
+<para>
+For the list of directives, see
+<link doc="http/ngx_http_v3_module.xml">ngx_http_v3_module</link>.
+</para>
+
+<para>
+To <link doc="http/ngx_http_v3_module.xml" id="quic_retry">enable</link>
+address validation:
+<programlisting>
+quic_retry on;
+</programlisting>
+
+To <link doc="http/ngx_http_ssl_module.xml" id="ssl_early_data">enable</link>
+0-RTT:
+<programlisting>
+ssl_early_data on;
+</programlisting>
+
+To <link doc="http/ngx_http_v3_module.xml" id="quic_gso">enable</link>
+GSO (Generic Segmentation Offloading):
+<programlisting>
+quic_gso on;
+</programlisting>
+
+To <link doc="http/ngx_http_v3_module.xml" id="quic_host_key">set</link>
+host key for various tokens:
+<programlisting>
+quic_host_key &lt;filename&gt;;
+</programlisting>
+</para>
+
+<para>
+QUIC requires TLSv1.3 protocol version which is enabled by default
+in the <link doc="http/ngx_http_ssl_module.xml" id="ssl_protocols"/> directive.
+</para>
+
+<para>
+By default,
+<link url="http://vger.kernel.org/lpc_net2018_talks/willemdebruijn-lpc2018-udpgso-paper-DRAFT-1.pdf">GSO Linux-specific optimization</link>
+is disabled.
+Enable it in case a corresponding network interface is configured
+to support GSO.
+</para>
+
+</section>
+
+
+<section id="example" name="Example Configuration">
+
+<para>
+<example>
+http {
+    log_format quic '$remote_addr - $remote_user [$time_local] '
+                    '"$request" $status $body_bytes_sent '
+                    '"$http_referer" "$http_user_agent" "$http3"';
+
+    access_log logs/access.log quic;
+
+    server {
+        # for better compatibility it's recommended
+        # to use the same port for quic and https
+        listen 8443 quic reuseport;
+        listen 8443 ssl;
+
+        ssl_certificate     certs/example.com.crt;
+        ssl_certificate_key certs/example.com.key;
+
+        location / {
+            # required for browsers to direct them to quic port
+            add_header Alt-Svc 'h3=":8443"; ma=86400';
+        }
+    }
+}
+</example>
+</para>
+
+</section>
+
+
+<section id="troubleshooting " name="Troubleshooting">
+
+<para>
+Tips that may help to identify problems:
+<list type="bullet">
+
+<listitem>
+Ensure nginx is built with the proper SSL library.
+</listitem>
+
+<listitem>
+Ensure nginx is using the proper SSL library in runtime
+(the <literal>nginx -V</literal> shows what it is currently used).
+</listitem>
+
+<listitem>
+Ensure a client is actually sending requests over QUIC.
+It is recommended to start with a simple console client such as
+<link url="https://nghttp2.org/ngtcp2">ngtcp2</link>
+to ensure the server is configured properly before trying
+with real browsers that may be quite picky with certificates.
+</listitem>
+
+<listitem>
+Build nginx with <link doc="debugging_log.xml">debug support</link>
+and check the debug log.
+It should contain all details about the connection and why it failed.
+All related messages contain the “<literal>quic</literal>” prefix
+and can be easily filtered out.
+</listitem>
+
+<listitem>
+For a deeper investigation, additional debugging can be enabled
+using the following macros:
+<literal>NGX_QUIC_DEBUG_PACKETS</literal>,
+<literal>NGX_QUIC_DEBUG_FRAMES</literal>,
+<literal>NGX_QUIC_DEBUG_ALLOC</literal>,
+<literal>NGX_QUIC_DEBUG_CRYPTO</literal>.
+
+<para>
+<programlisting>
+./configure
+    --with-http_v3_module
+    --with-debug
+    --with-cc-opt="-DNGX_QUIC_DEBUG_PACKETS -DNGX_QUIC_DEBUG_CRYPTO"
+</programlisting>
+</para>
+</listitem>
+
+</list>
+</para>
+
+</section>
+
+</article>
