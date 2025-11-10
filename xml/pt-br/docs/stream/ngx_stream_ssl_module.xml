@@ -9,7 +9,7 @@
 <module name="Module ngx_stream_ssl_module"
         link="/en/docs/stream/ngx_stream_ssl_module.html"
         lang="en"
-        rev="38">
+        rev="45">
 
 <section id="summary">
 
@@ -17,9 +17,16 @@
 The <literal>ngx_stream_ssl_module</literal> module (1.9.0)
 provides the necessary support for a stream proxy server to work with
 the SSL/TLS protocol.
+</para>
+
+<para>
 This module is not built by default, it should be enabled with the
 <literal>--with-stream_ssl_module</literal>
 configuration parameter.
+<note>
+This module requires the
+<link url="http://www.openssl.org">OpenSSL</link> library.
+</note>
 </para>
 
 </section>
@@ -116,7 +123,7 @@ server {
 
 <para>
 Specifies a <value>file</value> with the certificate in the PEM format
-for the given server.
+for the given virtual server.
 If intermediate certificates should be specified in addition to a primary
 certificate, they should be specified in the same file in the following
 order: the primary certificate comes first, then the intermediate certificates.
@@ -141,7 +148,9 @@ server {
 }
 </example>
 <note>
-Only OpenSSL 1.0.2 or higher supports separate certificate chains
+Only OpenSSL 1.0.2 or higher supports separate
+<link doc="../http/configuring_https_servers.xml" id="chains">certificate
+chains</link>
 for different certificates.
 With older versions, only one certificate chain can be used.
 </note>
@@ -163,10 +172,21 @@ and this may have a negative impact on performance.
 The value
 <literal>data</literal>:<value>$variable</value>
 can be specified instead of the <value>file</value> (1.15.10),
-which loads a certificate from a variable without using intermediate files.
+which loads a certificate from a variable
+without using intermediate files.
 Note that inappropriate use of this syntax may have its security implications,
 such as writing secret key data to
 <link doc="../ngx_core_module.xml" id="error_log">error log</link>.
+</para>
+
+<para>
+It should be kept in mind that due to the SSL/TLS protocol limitations,
+for maximum interoperability with clients that do not use
+<link url="http://en.wikipedia.org/wiki/Server_Name_Indication">SNI</link>,
+virtual servers with different certificates should listen on
+<link doc="../http/configuring_https_servers.xml"
+      id="name_based_https_servers">different
+IP addresses</link>.
 </para>
 
 </directive>
@@ -244,6 +264,31 @@ ssl_certificate_cache max=1000 inactive=20s valid=1m;
 </directive>
 
 
+<directive name="ssl_certificate_compression">
+<syntax><literal>on</literal> | <literal>off</literal></syntax>
+<default>off</default>
+<context>stream</context>
+<context>server</context>
+<appeared-in>1.29.1</appeared-in>
+
+<para>
+Enables TLS 1.3
+<link url="https://datatracker.ietf.org/doc/html/rfc8879">compression</link>
+of server certificates.
+<note>
+The directive is supported when using OpenSSL 3.2 or higher;
+the list of supported compression algorithms is provided by the library.
+</note>
+<note>
+The directive is supported when using BoringSSL;
+the list of supported compression algorithms includes
+<literal>zlib</literal> (1.29.3).
+</note>
+</para>
+
+</directive>
+
+
 <directive name="ssl_certificate_key">
 <syntax><value>file</value></syntax>
 <default/>
@@ -252,7 +297,7 @@ ssl_certificate_cache max=1000 inactive=20s valid=1m;
 
 <para>
 Specifies a <value>file</value> with the secret key in the PEM format
-for the given server.
+for the given virtual server.
 </para>
 
 <para>
@@ -261,6 +306,15 @@ The value
 can be specified instead of the <value>file</value>,
 which loads a secret key with a specified <value>id</value>
 from the OpenSSL engine <value>name</value>.
+</para>
+
+<para>
+The value
+<literal>store</literal>:<value>scheme</value>:<value>id</value>
+can be specified instead of the <value>file</value> (1.29.0),
+which is used to load a secret key with a specified <value>id</value>
+and OpenSSL provider registered URI <value>scheme</value>, such as
+<link url="https://datatracker.ietf.org/doc/html/rfc7512"><literal>pkcs11</literal></link>.
 </para>
 
 <para id="ssl_certificate_key_data">
@@ -533,7 +587,8 @@ resolver          192.0.2.1;
 Sets <literal>name</literal> and <literal>size</literal> of the cache
 that stores client certificates status for OCSP validation.
 The cache is shared between all worker processes.
-A cache with the same name can be used in several virtual servers.
+A cache with the same name can be used in several
+virtual servers.
 </para>
 
 <para>
@@ -640,12 +695,15 @@ Enables the specified protocols.
 If the directive is specified
 on the <link doc="ngx_stream_core_module.xml" id="server"/> level,
 the value from the default server can be used.
+Details are provided in the
+“<link doc="../http/server_names.xml" id="virtual_server_selection">Virtual
+server selection</link>” section.
 </para>
 
 <para>
 <note>
-The <literal>TLSv1.1</literal> and <literal>TLSv1.2</literal> parameters work
-only when OpenSSL 1.0.1 or higher is used.
+The <literal>TLSv1.1</literal> and <literal>TLSv1.2</literal> parameters
+work only when OpenSSL 1.0.1 or higher is used.
 </note>
 <note>
 The <literal>TLSv1.3</literal> parameter (1.13.0) works only when
@@ -736,7 +794,7 @@ The cache size is specified in bytes; one megabyte can store
 about 4000 sessions.
 Each shared cache should have an arbitrary name.
 A cache with the same name can be used in several
-servers.
+virtual servers.
 It is also used to automatically generate, store, and
 periodically rotate TLS session ticket keys (1.23.2)
 unless configured explicitly
@@ -1072,6 +1130,20 @@ returns the serial number of the client certificate
 for an established SSL connection (1.11.8);
 </tag-desc>
 
+<tag-name id="var_ssl_client_sigalg"><var>$ssl_client_sigalg</var></tag-name>
+<tag-desc>
+returns the
+<link url="https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml#tls-parameters-16">signature algorithm</link>
+for the client certificate for an established SSL connection (1.29.3).
+<note>
+The variable is supported only when using OpenSSL version 3.5 or higher.
+With older versions, the variable value will be an empty string.
+</note>
+<note>
+The variable is available only for new sessions.
+</note>
+</tag-desc>
+
 <tag-name id="var_ssl_client_v_end"><var>$ssl_client_v_end</var></tag-name>
 <tag-desc>
 returns the end date of the client certificate (1.11.8);
@@ -1147,6 +1219,20 @@ returns the session identifier of an established SSL connection;
 <tag-desc>
 returns “<literal>r</literal>” if an SSL session was reused,
 or “<literal>.</literal>” otherwise.
+</tag-desc>
+
+<tag-name id="var_ssl_sigalg"><var>$ssl_sigalg</var></tag-name>
+<tag-desc>
+returns the
+<link url="https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml#tls-parameters-16">signature algorithm</link>
+for the server certificate for an established SSL connection (1.29.3).
+<note>
+The variable is supported only when using OpenSSL version 3.5 or higher.
+With older versions, the variable value will be an empty string.
+</note>
+<note>
+The variable is available only for new sessions.
+</note>
 </tag-desc>
 
 </list>

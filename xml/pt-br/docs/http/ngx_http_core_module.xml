@@ -10,7 +10,7 @@
 <module name="Module ngx_http_core_module"
         link="/en/docs/http/ngx_http_core_module.html"
         lang="en"
-        rev="107">
+        rev="110">
 
 <section id="directives" name="Directives">
 
@@ -640,6 +640,38 @@ The
 and <link doc="ngx_http_dav_module.xml">ngx_http_dav_module</link>
 modules currently ignore this directive.
 </note>
+</para>
+
+</directive>
+
+
+<directive name="early_hints">
+<syntax><value>string</value> ...</syntax>
+<default/>
+<context>http</context>
+<context>server</context>
+<context>location</context>
+<appeared-in>1.29.0</appeared-in>
+
+<para>
+Defines conditions under which
+the <http-status code="103" text="Early Hints"/> response
+will be passed to a client.
+If at least one value of the string parameters is not empty and is not
+equal to “0” then the response will be passed:
+<example>
+map $http_sec_fetch_mode $early_hints {
+    navigate $http2$http3;
+}
+
+server {
+    ...
+    location / {
+        early_hints $early_hints;
+        proxy_pass http://example.com;
+    }
+}
+</example>
 </para>
 
 </directive>
@@ -1589,8 +1621,9 @@ If it is set to the value “<literal>off</literal>”, the
 Some operating systems support setting of TCP keepalive parameters on
 a per-socket basis using the <c-def>TCP_KEEPIDLE</c-def>,
 <c-def>TCP_KEEPINTVL</c-def>, and <c-def>TCP_KEEPCNT</c-def> socket options.
-On such systems (currently, Linux 2.4+, NetBSD 5+, and
-FreeBSD 9.0-STABLE), they can be configured
+On such systems
+(currently, Linux, NetBSD, Dragonfly, FreeBSD, and macOS),
+they can be configured
 using the <value>keepidle</value>, <value>keepintvl</value>, and
 <value>keepcnt</value> parameters.
 One or two parameters may be omitted, in which case the system default setting
@@ -2332,8 +2365,11 @@ Allows access if all (<literal>all</literal>) or at least one
 <link doc="ngx_http_access_module.xml">ngx_http_access_module</link>,
 <link doc="ngx_http_auth_basic_module.xml">ngx_http_auth_basic_module</link>,
 <link doc="ngx_http_auth_request_module.xml">ngx_http_auth_request_module</link>,
-or
 <link doc="ngx_http_auth_jwt_module.xml">ngx_http_auth_jwt_module</link>
+(1.13.10),
+or
+<link doc="ngx_http_auth_jwt_module.xml">ngx_http_auth_oidc_module</link>
+(1.27.4)
 modules allow access.
 </para>
 
@@ -3183,6 +3219,13 @@ or an empty string otherwise
 or an empty string otherwise
 </tag-desc>
 
+<tag-name id="var_is_request_port"><var>$is_request_port</var></tag-name>
+<tag-desc>
+“<literal>:</literal>” if
+<link id="var_request_port">$request_port</link> is non-empty,
+or an empty string otherwise (1.29.3)
+</tag-desc>
+
 <tag-name id="var_limit_rate"><var>$limit_rate</var></tag-name>
 <tag-desc>
 setting this variable enables response rate limiting;
@@ -3455,6 +3498,15 @@ request length (including request line, header, and request body)
 <tag-desc>
 request method, usually
 “<literal>GET</literal>” or “<literal>POST</literal>”
+</tag-desc>
+
+<tag-name id="var_request_port"><var>$request_port</var></tag-name>
+<tag-desc>
+in this order of precedence:
+port number from the
+<link url="https://datatracker.ietf.org/doc/html/rfc9110#section-4.2.1">URI</link>
+authority component, or
+port number from the <header>Host</header> request header field (1.29.3)
 </tag-desc>
 
 <tag-name id="var_request_time"><var>$request_time</var></tag-name>
