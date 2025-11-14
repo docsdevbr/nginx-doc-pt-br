@@ -1,18 +1,26 @@
 <!--
-  Copyright (C) Igor Sysoev
-  Copyright (C) Nginx, Inc.
-  -->
+Copyright (c) 2002-2021 Igor Sysoev.
+Copyright (c) 2011-2025 Nginx, Inc. All rights reserved.
+
+Documentation licensed under the BSD 2-Clause License.
+The original work was translated from English into Brazilian Portuguese.
+https://github.com/nginx/nginx.org/blob/-/text/LICENSE
+
+source_url: https://github.com/nginx/nginx.org/blob/main/xml/en/docs/index.xml
+revision: 9aa50148e42ccd86940d79c3f476dd6858aec48c
+status: ready
+-->
 
 <!DOCTYPE article SYSTEM "../../../dtd/article.dtd">
 
-<article name="nginx documentation"
-         link="/en/docs/"
-         lang="en"
+<article name="Documentação do NGINX"
+         link="/pt-br/docs/"
+         lang="pt-br"
          rev="52"
          toc="no">
 
 
-<section id="introduction" name="Introduction">
+<section id="introduction" name="Introdução">
 
 <para>
 <list type="bullet">
@@ -30,7 +38,7 @@
 </listitem>
 
 <listitem>
-<link url="https://docs.nginx.com/nginx/admin-guide/">Admin’s Guide</link>
+<link url="https://docs.nginx.com/nginx/admin-guide/">Guia da pessoa administradora</link>
 </listitem>
 
 <listitem>
@@ -102,7 +110,7 @@
 <list type="bullet">
 
 <listitem>
-<link doc="njs/index.xml">Scripting with njs</link>
+<link doc="njs/index.xml">Scripting com njs</link>
 </listitem>
 
 </list>
@@ -110,8 +118,7 @@
 <list type="bullet">
 
 <listitem>
-<link url="http://www.aosabook.org/en/nginx.html">Chapter “nginx” in
-“The Architecture of Open Source Applications”</link>
+<link url="http://www.aosabook.org/en/nginx.html">Capítulo “nginx” em “The Architecture of Open Source Applications”</link>
 </listitem>
 
 </list>
@@ -120,7 +127,7 @@
 </section>
 
 
-<section id="howto" name="How-To">
+<section id="howto" name="Como fazer">
 
 <para>
 <list type="bullet">
@@ -130,7 +137,7 @@
 </listitem>
 
 <listitem>
-<link url="https://docs.nginx.com/nginx/admin-guide/installing-nginx/installing-nginx-plus-amazon-web-services/">Installing NGINX Plus AMIs on Amazon EC2</link>
+<link url="https://docs.nginx.com/nginx/admin-guide/installing-nginx/installing-nginx-plus-amazon-web-services/">Instalando AMIs do NGINX Plus no Amazon EC2</link>
 </listitem>
 
 <listitem>
@@ -155,7 +162,7 @@
 </section>
 
 
-<section id="development" name="Development">
+<section id="development" name="Desenvolvimento">
 
 <para>
 <list type="bullet">
@@ -174,7 +181,7 @@
 </section>
 
 
-<section name="Modules reference">
+<section name="Referência de módulos">
 
 <para>
 <list type="bullet">
