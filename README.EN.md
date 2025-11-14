@@ -3,7 +3,7 @@
 [![README file in English][readme-badge-en]][readme-lang-en]
 [![README file in Brazilian Portuguese][readme-badge-pt-br]][readme-lang-pt-br]
 
-Translation of the nginx Documentation into Brazilian Portuguese.
+Translation of the NGINX Documentation into Brazilian Portuguese.
 
 ## Support
 
@@ -15,7 +15,7 @@ You can support the project through [GitHub Sponsors][sponsor-github] or
 Copyright (c) 2002-2021 Igor Sysoev.<br>
 Copyright (c) 2011-2025 Nginx, Inc. All rights reserved.
 
-Licensed under the [2-clause BSD License][license-bsd].
+Documentation licensed under the [BSD 2-Clause License][license-bsd].
 
 [license-bsd]: LICENSE
 

@@ -3,7 +3,7 @@
 [![Arquivo README em inglês][readme-badge-en]][readme-lang-en]
 [![Arquivo README em português brasileiro][readme-badge-pt-br]][readme-lang-pt-br]
 
-Tradução da Documentação do nginx para português brasileiro.
+Tradução da Documentação do NGINX para português brasileiro.
 
 ## Apoio
 
@@ -15,7 +15,7 @@ Você pode apoiar o projeto através do [GitHub Sponsors][sponsor-github] ou
 Copyright (c) 2002-2021 Igor Sysoev.<br>
 Copyright (c) 2011-2025 Nginx, Inc. Todos os direitos reservados.
 
-Licenciado sob a [Licença BSD de 2 Cláusulas][license-bsd].<br>
+Documentação licenciada sob a [Licença BSD de 2 Cláusulas][license-bsd].<br>
 A obra original foi traduzida do inglês para o português brasileiro.
 
 [license-bsd]: LICENSE
