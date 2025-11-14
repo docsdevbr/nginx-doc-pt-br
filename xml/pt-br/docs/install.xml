@@ -43,11 +43,11 @@ status: ready
 
 <para>
   No FreeBSD, o NGINX pode ser instalado tanto a partir dos
-  <link url="https://docs.freebsd.org/en/books/handbook/ports/#pkgng-intro">
+  <link url="https://docs.freebsd.org/pt-br/books/handbook/ports/#pkgng-intro">
     pacotes
   </link>
   quanto através do sistema de
-  <link url="https://docs.freebsd.org/en/books/handbook/ports/#ports-using">
+  <link url="https://docs.freebsd.org/pt-br/books/handbook/ports/#ports-using">
     ports
   </link>.
   O sistema de ports oferece maior flexibilidade, permitindo a seleção entre uma
