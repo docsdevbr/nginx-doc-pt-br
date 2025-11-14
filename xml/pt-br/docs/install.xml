@@ -1,20 +1,29 @@
 <!--
-  Copyright (C) Igor Sysoev
-  Copyright (C) Nginx, Inc.
-  -->
+Copyright (c) 2002-2021 Igor Sysoev.
+Copyright (c) 2011-2025 Nginx, Inc. All rights reserved.
+
+Documentation licensed under the BSD 2-Clause License.
+The original work was translated from English into Brazilian Portuguese.
+https://github.com/nginx/nginx.org/blob/-/text/LICENSE
+
+source_url: https://github.com/nginx/nginx.org/blob/main/xml/en/docs/install.xml
+revision: b887e327769f16ea2774fea31fd742ac71280fdb
+status: ready
+-->
 
 <!DOCTYPE article SYSTEM "../../../dtd/article.dtd">
 
-<article name="Installing nginx"
-         link="/en/docs/install.html"
-         lang="en"
+<article name="Instalando o NGINX"
+         link="/pt-br/docs/install.html"
+         lang="pt-br"
          rev="3"
          toc="no">
 
 <section>
 
 <para>
-nginx can be installed differently, depending on the operating system.
+  O NGINX pode ser instalado de maneiras diferentes, dependendo do sistema
+  operacional.
 </para>
 
 </section>
@@ -23,36 +32,40 @@ nginx can be installed differently, depending on the operating system.
 <section id="linux" name="Installation on Linux">
 
 <para>
-For Linux, nginx <link doc="../linux_packages.xml">packages</link>
-from nginx.org can be used.
+  Para Linux, os <link doc="../linux_packages.xml">pacotes</link> do NGINX
+  disponíveis em nginx.org podem ser utilizados.
 </para>
 
 </section>
 
 
-<section id="freebsd" name="Installation on FreeBSD">
+  <section id="freebsd" name="Instalação no FreeBSD">
 
 <para>
-On FreeBSD, nginx can be installed either from the <link
-url="https://docs.freebsd.org/en/books/handbook/ports/#pkgng-intro">packages</link>
-or through the
-<link url="https://docs.freebsd.org/en/books/handbook/ports/#ports-using">ports</link>
-system.
-The ports system provides greater flexibility, allowing selection among
-a wide range of options.
-The port will compile nginx with the specified options and install it.
+  No FreeBSD, o NGINX pode ser instalado tanto a partir dos
+  <link url="https://docs.freebsd.org/en/books/handbook/ports/#pkgng-intro">
+    pacotes
+  </link>
+  quanto através do sistema de
+  <link url="https://docs.freebsd.org/en/books/handbook/ports/#ports-using">
+    ports
+  </link>.
+  O sistema de ports oferece maior flexibilidade, permitindo a seleção entre uma
+  ampla gama de opções.
+  O port compilará o NGINX com as opções especificadas e o instalará.
 </para>
 
 </section>
 
 
-<section id="source_install" name="Building from Sources">
+<section id="source_install" name="Compilando a partir do código-fonte">
 
 <para>
-If some special functionality is required, not available with packages and
-ports, nginx can also be compiled from source files.
-While more flexible, this approach may be complex for a beginner.
-For more information, see <link doc="configure.xml"/>.
+  Caso seja necessária alguma funcionalidade específica, não disponível nos
+  pacotes e ports, o NGINX também pode ser compilado a partir dos arquivos de
+  código-fonte.
+  Embora seja mais flexível, essa abordagem pode ser complexa para iniciantes.
+  Para mais informações, consulte <link doc="configure.xml"/>.
 </para>
 
 </section>
