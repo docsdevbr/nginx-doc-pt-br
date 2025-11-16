@@ -1,469 +1,474 @@
 <!--
-  Copyright (C) Nginx, Inc.
-  -->
+Copyright (c) Nginx, Inc.
+
+Documentation licensed under the BSD 2-Clause License.
+The original work was translated from English into Brazilian Portuguese.
+https://github.com/nginx/nginx.org/blob/-/text/LICENSE
+
+source_url: https://github.com/nginx/nginx.org/blob/main/xml/en/docs/beginners_guide.xml
+revision: 43d1c92df129e33b30d31a67413ca86347665094
+status: ready
+-->
 
 <!DOCTYPE article SYSTEM "../../../dtd/article.dtd">
 
-<article name="Beginner’s Guide"
-         link="/en/docs/beginners_guide.html"
-         lang="en"
+<article name="Guia para iniciantes"
+         link="/pt-br/docs/beginners_guide.html"
+         lang="pt-br"
          rev="1">
 
 <section>
 
 <para>
-This guide gives a basic introduction to nginx and describes some
-simple tasks that can be done with it.
-It is supposed that nginx is already installed on the reader’s machine.
-If it is not, see the <link doc="install.xml"/> page.
-This guide describes how to start and stop nginx, and reload its
-configuration, explains the structure
-of the configuration file and describes how to set up nginx
-to serve out static content, how to configure nginx as a proxy
-server, and how to connect it with a FastCGI application.
+  Este guia fornece uma introdução básica ao NGINX e descreve algumas tarefas
+  simples que podem ser realizadas com ele.
+  Assume-se que o NGINX já esteja instalado na sua máquina.
+  Caso contrário, consulte a página <link doc="install.xml"/>.
+  Este guia descreve como iniciar e parar o NGINX e recarregar sua configuração,
+  explica a estrutura do arquivo de configuração e descreve como configurar o
+  NGINX para servir conteúdo estático, como configurá-lo como um servidor proxy
+  e como conectá-lo a uma aplicação FastCGI.
 </para>
 
 <para>
-nginx has one master process and several worker processes.
-The main purpose of the master process is to read and evaluate configuration,
-and maintain worker processes.
-Worker processes do actual processing of requests.
-nginx employs event-based model and OS-dependent mechanisms to efficiently
-distribute requests among worker processes.
-The number of worker processes is defined in the configuration file and
-may be fixed for a given configuration or automatically adjusted to the
-number of available CPU cores (see
-<link doc="ngx_core_module.xml" id="worker_processes"/>).
+  O NGINX possui um processo mestre e vários processos worker.
+  O principal objetivo do processo principal é ler e avaliar a configuração, e
+  manter os processos worker.
+  Os processos worker realizam o processamento real das requisições.
+  O NGINX emprega um modelo baseado em eventos e mecanismos que dependem do
+  sistema operacional para distribuir eficientemente as requisições entre os
+  processos worker.
+  O número de processos worker é definido no arquivo de configuração e pode ser
+  fixo para uma determinada configuração ou ajustado automaticamente ao número
+  de núcleos de CPU disponíveis (consulte
+  <link doc="ngx_core_module.xml" id="worker_processes"/>).
 </para>
 
 <para>
-The way nginx and its modules work is determined in the configuration file.
-By default, the configuration file is named <path>nginx.conf</path>
-and placed in the directory
-<path>/usr/local/nginx/conf</path>,
-<path>/etc/nginx</path>, or
-<path>/usr/local/etc/nginx</path>.
-</para>
-
-</section>
-
-
-<section id="control" name="Starting, Stopping, and Reloading Configuration">
-
-<para>
-To start nginx, run the executable file.
-Once nginx is started, it can be controlled by invoking the executable
-with the <literal>-s</literal> parameter.
-Use the following syntax:
-<programlisting>
-nginx -s <i>signal</i>
-</programlisting>
-Where <i>signal</i> may be one of the following:
-<list type="bullet">
-<listitem>
-<literal>stop</literal>&mdash;fast shutdown
-</listitem>
-<listitem>
-<literal>quit</literal>&mdash;graceful shutdown
-</listitem>
-<listitem>
-<literal>reload</literal>&mdash;reloading the configuration file
-</listitem>
-<listitem>
-<literal>reopen</literal>&mdash;reopening the log files
-</listitem>
-</list>
-For example, to stop nginx processes with waiting for the worker processes
-to finish serving current requests, the following command can be executed:
-<programlisting>
-nginx -s quit
-</programlisting>
-<note>This command should be executed under the same user that
-started nginx.</note>
-</para>
-
-<para>
-Changes made in the configuration file
-will not be applied until the command to reload configuration is
-sent to nginx or it is restarted.
-To reload configuration, execute:
-<programlisting>
-nginx -s reload
-</programlisting>
-</para>
-
-<para>
-Once the master process receives the signal to reload configuration,
-it checks the syntax validity
-of the new configuration file and tries to apply the configuration provided
-in it.
-If this is a success, the master process starts new worker processes
-and sends messages to old worker processes, requesting them to
-shut down.
-Otherwise, the master process rolls back the changes and
-continues to work with the old configuration.
-Old worker processes, receiving a command to shut down,
-stop accepting new connections and continue to service current requests until
-all such requests are serviced.
-After that, the old worker processes exit.
-</para>
-
-<para>
-A signal may also be sent to nginx processes with the help of Unix tools
-such as the <command>kill</command> utility.
-In this case a signal is sent directly to a process with a given process ID.
-The process ID of the nginx master process is written, by default, to the
-<path>nginx.pid</path> in the directory
-<path>/usr/local/nginx/logs</path> or
-<path>/var/run</path>.
-For example, if the master process ID is 1628, to send the QUIT signal
-resulting in nginx’s graceful shutdown, execute:
-<programlisting>
-kill -s QUIT 1628
-</programlisting>
-For getting the list of all running nginx processes, the <command>ps</command>
-utility may be used, for example, in the following way:
-<programlisting>
-ps -ax | grep nginx
-</programlisting>
-For more information on sending signals to nginx, see
-<link doc="control.xml"/>.
+  O funcionamento do NGINX e seus módulos é determinado no arquivo de
+  configuração.
+  Por padrão, o arquivo de configuração é nomeado <path>nginx.conf</path> e está
+  localizado no diretório <path>/usr/local/nginx/conf</path>,
+  <path>/etc/nginx</path> ou <path>/usr/local/etc/nginx</path>.
 </para>
 
 </section>
 
 
-<section id="conf_structure" name="Configuration File’s Structure">
+<section id="control" name="Iniciando, parando e recarregando a configuração">
 
 <para>
-nginx consists of modules which are controlled by directives specified
-in the configuration file.
-Directives are divided into simple directives and block directives.
-A simple directive consists of the name and parameters separated by spaces
-and ends with a semicolon (<literal>;</literal>).
-A block directive has the same structure as a simple directive, but
-instead of the semicolon it ends with a set of additional instructions
-surrounded by braces (<literal>{</literal> and <literal>}</literal>).
-If a block directive can have other directives inside braces,
-it is called a context (examples:
-<link doc="ngx_core_module.xml" id="events"/>,
-<link doc="http/ngx_http_core_module.xml" id="http"/>,
-<link doc="http/ngx_http_core_module.xml" id="server"/>,
-and
-<link doc="http/ngx_http_core_module.xml" id="location"/>).
+  Para iniciar o NGINX, execute o arquivo executável.
+  Uma vez iniciado, o NGINX pode ser controlado invocando o executável com o
+  parâmetro <literal>-s</literal>.
+  Use a seguinte sintaxe:
+  <programlisting>
+  nginx -s <i>sinal</i>
+  </programlisting>
+  Onde <i>sinal</i> pode ser um dos seguintes:
+  <list type="bullet">
+  <listitem>
+  <literal>stop</literal>&mdash;desligamento rápido
+  </listitem>
+  <listitem>
+  <literal>quit</literal>&mdash;desligamento correto
+  </listitem>
+  <listitem>
+  <literal>reload</literal>&mdash;recarregar o arquivo de configuração
+  </listitem>
+  <listitem>
+  <literal>reopen</literal>&mdash;reabrir os arquivos de log
+  </listitem>
+  </list>
+  Por exemplo, para interromper os processos do NGINX aguardando que os
+  processos worker terminem de atender às requisições atuais, o seguinte comando
+  pode ser executado:
+  <programlisting>
+  nginx -s quit
+  </programlisting>
+  <note>
+    Este comando deve ser executado sob o mesmo usuário que iniciou o NGINX.
+  </note>
 </para>
 
 <para>
-Directives placed in the configuration file outside
-of any contexts are considered to be in the
-<link doc="ngx_core_module.xml">main</link> context.
-The <literal>events</literal> and <literal>http</literal> directives
-reside in the <literal>main</literal> context, <literal>server</literal>
-in <literal>http</literal>, and <literal>location</literal> in
-<literal>server</literal>.
+  As alterações feitas no arquivo de configuração não serão aplicadas até que o
+  comando para recarregar a configuração seja enviado ao NGINX ou que ele seja
+  reiniciado.
+  Para recarregar a configuração, execute:
+  <programlisting>
+  nginx -s reload
+  </programlisting>
 </para>
 
 <para>
-The rest of a line after the <literal>#</literal> sign is considered a comment.
-</para>
-
-</section>
-
-
-<section id="static" name="Serving Static Content">
-
-<para>
-An important web server task is serving out
-files (such as images or static HTML pages).
-You will implement an example where, depending on the request,
-files will be served from different local directories: <path>/data/www</path>
-(which may contain HTML files) and <path>/data/images</path>
-(containing images).
-This will require editing of the configuration file and setting up of a
-<link doc="http/ngx_http_core_module.xml" id="server"/>
-block inside the <link doc="http/ngx_http_core_module.xml" id="http"/>
-block with two <link doc="http/ngx_http_core_module.xml" id="location"/>
-blocks.
+  Assim que o processo principal recebe o sinal para recarregar a configuração,
+  ele verifica a validade da sintaxe do novo arquivo de configuração e tenta
+  aplicar a configuração fornecida nele.
+  Se tudo correr bem, o processo principal inicia novos processos worker e envia
+  mensagens aos processos worker antigos, solicitando que eles encerrem.
+  Caso contrário, o processo principal reverte as alterações e continua a
+  trabalhar com a configuração antiga.
+  Os processos worker antigos, ao receberem um comando para encerrar, param de
+  aceitar novas conexões e continuam a atender às requisições atuais até que
+  todas essas requisições sejam atendidas.
+  Depois disso, os processos worker antigos são encerrados.
 </para>
 
 <para>
-First, create the <path>/data/www</path> directory and put an
-<path>index.html</path> file with any text content into it and
-create the <path>/data/images</path> directory and place some
-images in it.
-</para>
-
-<para>
-Next, open the configuration file.
-The default configuration file already includes several examples of
-the <literal>server</literal> block, mostly commented out.
-For now comment out all such blocks and start a new
-<literal>server</literal> block:
-<programlisting>
-http {
-    server {
-    }
-}
-</programlisting>
-Generally, the configuration file may include several
-<literal>server</literal> blocks
-<link doc="http/request_processing.xml">distinguished</link> by ports on which
-they <link doc="http/ngx_http_core_module.xml" id="listen">listen</link> to
-and by
-<link doc="http/server_names.xml">server names</link>.
-Once nginx decides which <literal>server</literal> processes a request,
-it tests the URI specified in the request’s header against the parameters of the
-<literal>location</literal> directives defined inside the
-<literal>server</literal> block.
-</para>
-
-<para>
-Add the following <literal>location</literal> block to the
-<literal>server</literal> block:
-<programlisting>
-location / {
-    root /data/www;
-}
-</programlisting>
-This <literal>location</literal> block specifies the
-“<path>/</path>” prefix compared with the URI from the request.
-For matching requests, the URI will be added to the path specified in the
-<link doc="http/ngx_http_core_module.xml" id="root"/>
-directive, that is, to <path>/data/www</path>,
-to form the path to the requested file on the local file system.
-If there are several matching <literal>location</literal> blocks nginx
-selects the one with the longest prefix.
-The <literal>location</literal> block above provides the shortest
-prefix, of length one,
-and so only if all other <literal>location</literal>
-blocks fail to provide a match, this block will be used.
-</para>
-
-<para>
-Next, add the second <literal>location</literal> block:
-<programlisting>
-location /images/ {
-    root /data;
-}
-</programlisting>
-It will be a match for requests starting with <literal>/images/</literal>
-(<literal>location /</literal> also matches such requests,
-but has shorter prefix).
-</para>
-
-<para>
-The resulting configuration of the <literal>server</literal> block should
-look like this:
-<programlisting>
-server {
-    location / {
-        root /data/www;
-    }
-
-    location /images/ {
-        root /data;
-    }
-}
-</programlisting>
-This is already a working configuration of a server that listens
-on the standard port 80 and is accessible on the local machine at
-<literal>http://localhost/</literal>.
-In response to requests with URIs starting with <literal>/images/</literal>,
-the server will send files from the <path>/data/images</path> directory.
-For example, in response to the
-<literal>http://localhost/images/example.png</literal> request nginx will
-send the <path>/data/images/example.png</path> file.
-If such file does not exist, nginx will send a response
-indicating the 404 error.
-Requests with URIs not starting with <literal>/images/</literal> will be
-mapped onto the <path>/data/www</path> directory.
-For example, in response to the
-<literal>http://localhost/some/example.html</literal> request nginx will
-send the <path>/data/www/some/example.html</path> file.
-</para>
-
-<para>
-To apply the new configuration, start nginx if it is not yet started or
-send the <literal>reload</literal> signal to the nginx’s master process,
-by executing:
-<programlisting>
-nginx -s reload
-</programlisting>
-</para>
-
-<para>
-<note>
-In case something does not work as expected, you may try to find out
-the reason in <path>access.log</path> and
-<path>error.log</path> files in the directory
-<path>/usr/local/nginx/logs</path> or
-<path>/var/log/nginx</path>.
-</note>
+  Um sinal também pode ser enviado aos processos do NGINX com a ajuda de
+  ferramentas Unix, como o utilitário <comando>kill</comando>.
+  Nesse caso, um sinal é enviado diretamente para um processo com um determinado
+  ID de processo.
+  O ID do processo principal do NGINX é gravado, por padrão, no
+  <path>nginx.pid</path> no diretório <path>/usr/local/nginx/logs</path> ou
+  <path>/var/run</path>.
+  Por exemplo, se o ID do processo principal for 1628, para enviar o sinal QUIT
+  resultando no desligamento correto do NGINX, execute:
+  <programlisting>
+  kill -s QUIT 1628
+  </programlisting>
+  Para obter a lista de todos os processos do NGINX em execução, o utilitário
+  <comando>ps</comando> pode ser usado, por exemplo, da seguinte maneira:
+  <programlisting>
+  ps -ax | grep nginx
+  </programlisting>
+  Para obter mais informações sobre como enviar sinais para o NGINX, consulte
+  <link doc="control.xml"/>.
 </para>
 
 </section>
 
 
-<section id="proxy" name="Setting Up a Simple Proxy Server">
+<section id="conf_structure" name="Estrutura do arquivo de configuração">
 
 <para>
-One of the frequent uses of nginx is setting it up as a proxy server, which
-means a server that receives requests, passes them to the proxied servers,
-retrieves responses from them, and sends them to the clients.
+  O nginx consiste em módulos que são controlados por diretivas especificadas no
+  arquivo de configuração.
+  As diretivas são divididas em diretivas simples e diretivas de bloco.
+  Uma diretiva simples consiste no nome e nos parâmetros separados por espaços e
+  termina com um ponto e vírgula (<literal>;</literal>).
+  Uma diretiva de bloco tem a mesma estrutura que uma diretiva simples, mas em
+  vez do ponto e vírgula, termina com um conjunto de instruções adicionais entre
+  chaves (<literal>{</literal> e <literal>}</literal>).
+  Se uma diretiva de bloco puder conter outras diretivas dentro de chaves, isso
+  é chamado de contexto (exemplos:
+  <link doc="ngx_core_module.xml" id="events"/>,
+  <link doc="http/ngx_http_core_module.xml" id="http"/>,
+  <link doc="http/ngx_http_core_module.xml" id="server"/>, e
+  <link doc="http/ngx_http_core_module.xml" id="location"/>).
 </para>
 
 <para>
-We will configure a basic proxy server, which serves requests of
-images with files from the local directory and sends all other requests to a
-proxied server.
-In this example, both servers will be defined on a single nginx instance.
+  Diretivas colocadas no arquivo de configuração fora de qualquer contexto são
+  consideradas como estando no contexto
+  <link doc="ngx_core_module.xml">main</link>.
+  As diretivas <literal>events</literal> e <literal>http</literal> residem no
+  contexto <literal>main</literal>, <literal>server</literal> em
+  <literal>http</literal> e <literal>location</literal> em
+  <literal>server</literal>.
 </para>
 
 <para>
-First, define the proxied server by adding one more <literal>server</literal>
-block to the nginx’s configuration file with the following contents:
-<programlisting>
-server {
-    listen 8080;
-    root /data/up1;
-
-    location / {
-    }
-}
-</programlisting>
-This will be a simple server that listens on the port 8080
-(previously, the <literal>listen</literal> directive has not been specified
-since the standard port 80 was used) and maps
-all requests to the <path>/data/up1</path> directory on the local
-file system.
-Create this directory and put the <path>index.html</path> file into it.
-Note that the <literal>root</literal> directive is placed in the
-<literal>server</literal> context.
-Such <literal>root</literal> directive is used when the
-<literal>location</literal> block selected for serving a request does not
-include its own <literal>root</literal> directive.
-</para>
-
-<para>
-Next, use the server configuration from the previous section
-and modify it to make it a proxy server configuration.
-In the first <literal>location</literal> block, put the
-<link doc="http/ngx_http_proxy_module.xml" id="proxy_pass"/>
-directive with the protocol, name and port of the proxied server specified
-in the parameter (in our case, it is <literal>http://localhost:8080</literal>):
-<programlisting>
-server {
-    location / {
-        proxy_pass http://localhost:8080;
-    }
-
-    location /images/ {
-        root /data;
-    }
-}
-</programlisting>
-</para>
-
-<para>
-We will modify the second <literal>location</literal>
-block, which currently maps requests with the <literal>/images/</literal>
-prefix to the files under the <path>/data/images</path> directory,
-to make it match the requests of images with typical file extensions.
-The modified <literal>location</literal> block looks like this:
-<programlisting>
-location ~ \.(gif|jpg|png)$ {
-    root /data/images;
-}
-</programlisting>
-The parameter is a regular expression matching all URIs ending
-with <path>.gif</path>, <path>.jpg</path>, or <path>.png</path>.
-A regular expression should be preceded with <literal>~</literal>.
-The corresponding requests will be mapped to the <path>/data/images</path>
-directory.
-</para>
-
-<para>
-When nginx selects a <literal>location</literal> block to serve a request
-it first checks <link doc="http/ngx_http_core_module.xml" id="location"/>
-directives that specify prefixes, remembering <literal>location</literal>
-with the longest prefix, and then checks regular expressions.
-If there is a match with a regular expression, nginx picks this
-<literal>location</literal> or, otherwise, it picks the one remembered earlier.
-</para>
-
-<para>
-The resulting configuration of a proxy server will look like this:
-<programlisting>
-server {
-    location / {
-        proxy_pass http://localhost:8080/;
-    }
-
-    location ~ \.(gif|jpg|png)$ {
-        root /data/images;
-    }
-}
-</programlisting>
-This server will filter requests ending with <path>.gif</path>,
-<path>.jpg</path>, or <path>.png</path>
-and map them to the <path>/data/images</path> directory (by adding URI to the
-<literal>root</literal> directive’s parameter) and pass all other requests
-to the proxied server configured above.
-</para>
-
-<para>
-To apply new configuration, send the <literal>reload</literal> signal to
-nginx as described in the previous sections.
-</para>
-
-<para>
-There are many <link doc="http/ngx_http_proxy_module.xml">more</link>
-directives that may be used to further configure a proxy connection.
+  O restante de uma linha após o sinal <literal>#</literal> é considerado um
+  comentário.
 </para>
 
 </section>
 
 
-<section id="fastcgi" name="Setting Up FastCGI Proxying">
+<section id="static" name="Servindo conteúdo estático">
 
 <para>
-nginx can be used to route requests to FastCGI servers which run
-applications built with various frameworks and programming languages
-such as PHP.
+  Uma tarefa importante de um servidor web é servir arquivos (como imagens ou
+  páginas HTML estáticas).
+  Você implementará um exemplo onde, dependendo da requisição, arquivos serão
+  servidos de diferentes diretórios locais: <path>/data/www</path> (que pode
+  conter arquivos HTML) e <path>/data/images</path> (contendo imagens).
+  Isso exigirá a edição do arquivo de configuração e a configuração de um bloco
+  <link doc="http/ngx_http_core_module.xml" id="server"/>
+  dentro do bloco <link doc="http/ngx_http_core_module.xml" id="http"/>
+  com dois blocos <link doc="http/ngx_http_core_module.xml" id="location"/>.
 </para>
 
 <para>
-The most basic nginx configuration to work with a FastCGI server
-includes using the
-<link doc="http/ngx_http_fastcgi_module.xml" id="fastcgi_pass"/>
-directive instead of the <literal>proxy_pass</literal> directive,
-and <link doc="http/ngx_http_fastcgi_module.xml" id="fastcgi_param"/>
-directives to set parameters passed to a FastCGI server.
-Suppose the FastCGI server is accessible on <literal>localhost:9000</literal>.
-Taking the proxy configuration from the previous section as a basis,
-replace the <literal>proxy_pass</literal> directive with the
-<literal>fastcgi_pass</literal> directive and change the parameter to
-<literal>localhost:9000</literal>.
-In PHP, the <literal>SCRIPT_FILENAME</literal> parameter is used for
-determining the script name, and the <literal>QUERY_STRING</literal>
-parameter is used to pass request parameters.
-The resulting configuration would be:
-<programlisting>
-server {
-    location / {
-        fastcgi_pass  localhost:9000;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-        fastcgi_param QUERY_STRING    $query_string;
-    }
+  Primeiro, crie o diretório <path>/data/www</path> e coloque um arquivo
+  <path>index.html</path> com qualquer conteúdo de texto nele e crie o diretório
+  <path>/data/images</path> e coloque algumas imagens nele.
+</para>
 
-    location ~ \.(gif|jpg|png)$ {
-        root /data/images;
-    }
-}
+<para>
+  Em seguida, abra o arquivo de configuração.
+  O arquivo de configuração padrão já inclui vários exemplos do bloco
+  <literal>server</literal>, a maioria comentada.
+  Por enquanto, comente todos esses blocos e inicie um novo bloco
+  <literal>server</literal>:
+  <programlisting>
+  http {
+      server {
+      }
+  }
+  </programlisting>
+  Geralmente, o arquivo de configuração pode incluir vários blocos
+  <literal>server</literal>
+  <link doc="http/request_processing.xml">distinguidos</link> pelas portas nas
+  quais eles
+  <link doc="http/ngx_http_core_module.xml" id="listen">escutam</link> e pelos
+  <link doc="http/server_names.xml">nomes de servidor</link>.
+  Assim que o NGINX decide qual <literal>server</literal> processará uma
+  requisição, ele testa o URI especificado no cabeçalho da requisição em relação
+  aos parâmetros das diretivas <literal>location</literal> definidas dentro do
+  bloco <literal>server</literal>.
+</para>
+
+<para>
+  Adicione o seguinte bloco <literal>location</literal> ao bloco
+  <literal>server</literal>:
+  <programlisting>
+  location / {
+      root /data/www;
+  }
+  </programlisting>
+  Este bloco <literal>location</literal> especifica o prefixo "<path>/</path>"
+  comparado com o URI da requisição.
+  Para requisições correspondentes, o URI será adicionado ao caminho
+  especificado na diretiva
+  <link doc="http/ngx_http_core_module.xml" id="root"/>, ou seja,
+  <path>/data/www</path>, para formar o caminho para o arquivo solicitado no
+  sistema de arquivos local.
+  Se houver vários blocos <literal>location</literal> correspondentes, o NGINX
+  seleciona aquele com o prefixo mais longo.
+  O bloco <literal>location</literal> acima fornece o prefixo mais curto, de
+  comprimento um, e portanto, somente se todos os outros blocos
+  <literal>location</literal> não encontrarem uma correspondência, este bloco
+  será usado.
+</para>
+
+<para>
+  Em seguida, adicione o segundo bloco <literal>location</literal>:
+  <programlisting>
+  location /images/ {
+      root /data;
+  }
+  </programlisting>
+  Ele corresponderá a requisições que começam com <literal>/images/</literal>
+  (<literal>location /</literal> também corresponde a essas requisições, mas tem
+  um prefixo mais curto).
+</para>
+
+<para>
+  A configuração resultante do bloco <literal>server</literal> deve ser
+  semelhante a esta:
+  <programlisting>
+  server {
+      location / {
+          root /data/www;
+      }
+
+      location /images/ {
+          root /data;
+      }
+  }
+  </programlisting>
+  Esta já é uma configuração funcional de um servidor que escuta na porta padrão
+  80 e é acessível na máquina local em <literal>http://localhost/</literal>.
+  Em resposta a requisições com URIs começando com <literal>/images/</literal>,
+  o servidor enviará arquivos do diretório <path>/data/images</path>.
+  Por exemplo, em resposta à requisição
+  <literal>http://localhost/images/example.png</literal>, o NGINX enviará o
+  arquivo <path>/data/images/example.png</path>.
+  Se tal arquivo não existir, o NGINX enviará uma resposta indicando o erro 404.
+  Requisições com URIs que não começam com <literal>/images/</literal> serão
+  mapeadas para o diretório <path>/data/www</path>.
+  Por exemplo, em resposta à requisição
+  <literal>http://localhost/some/example.html</literal>, o NGINX enviará o
+  arquivo <path>/data/www/some/example.html</path>.
+</para>
+
+<para>
+  Para aplicar a nova configuração, inicie o NGINX, caso ainda não esteja em
+  execução, ou envie o sinal <literal>reload</literal> para o processo principal
+  do NGINX, executando:
+  <programlisting>
+  nginx -s reload
+  </programlisting>
+</para>
+
+<para>
+  <note>
+    Caso algo não funcione como esperado, você pode tentar descobrir o motivo
+    nos arquivos <path>access.log</path> e <path>error.log</path> no diretório
+    <path>/usr/local/nginx/logs</path> ou <path>/var/log/nginx</path>.
+  </note>
+</para>
+
+</section>
+
+
+<section id="proxy" name="Configurando um servidor proxy simples">
+
+<para>
+  Um dos usos frequentes do NGINX é configurá-lo como um servidor proxy, que
+  significa um servidor que recebe requisições, as encaminha para os servidores
+  que ele delega, recupera as respostas deles e as envia para os clientes.
+</para>
+
+<para>
+  Vamos configurar um servidor proxy básico, que atenderá às requisições de
+  imagens com arquivos do diretório local e enviará todas as outras requisições
+  para um servidor delegado.
+  Neste exemplo, ambos os servidores serão definidos em uma única instância do
+  NGINX.
+</para>
+
+<para>
+  Primeiro, defina o servidor delegado adicionando mais um bloco
+  <literal>server</literal> ao arquivo de configuração do NGINX com o seguinte
+  conteúdo:
+  <programlisting>
+  server {
+      listen 8080;
+      root /data/up1;
+
+      location / {
+      }
+  }
+  </programlisting>
+  Este será um servidor simples que escuta na porta 8080 (anteriormente, a
+  diretiva <literal>listen</literal> não foi especificada pois a porta padrão 80
+  foi usada) e mapeia todas as requisições para o diretório
+  <path>/data/up1</path> no sistema de arquivos local.
+  Crie este diretório e coloque o arquivo <path>index.html</path> nele.
+  Observe que a diretiva <literal>root</literal> está localizada no contexto
+  <literal>server</literal>.
+  Essa diretiva <literal>root</literal> é usada quando o bloco
+  <literal>location</literal> selecionado para atender a uma requisição não
+  inclui sua própria diretiva <literal>root</literal>.
+</para>
+
+<para>
+  Em seguida, use a configuração de servidor da seção anterior e modifique-a
+  para torná-la uma configuração de servidor proxy.
+  No primeiro bloco <literal>location</literal>, coloque a diretiva
+  <link doc="http/ngx_http_proxy_module.xml" id="proxy_pass"/> com o protocolo,
+  nome e porta do servidor delegado especificados no parâmetro (em nosso caso, é
+  <literal>http://localhost:8080</literal>):
+  <programlisting>
+  server {
+      location / {
+          proxy_pass http://localhost:8080;
+      }
+
+      location /images/ {
+          root /data;
+      }
+  }
+  </programlisting>
+</para>
+
+<para>
+  Modificaremos o segundo bloco <literal>location</literal> que atualmente
+  mapeia requisições com o prefixo <literal>/images/</literal> para os arquivos
+  no diretório <path>/data/images</path>, para que corresponda às requisições de
+  imagens com extensões de arquivo típicas.
+  O bloco <literal>location</literal> modificado ficará assim:
+  <programlisting>
+  location ~ \.(gif|jpg|png)$ {
+      root /data/images;
+  }
+  </programlisting>
+  O parâmetro é uma expressão regular que corresponde a todos os URIs que
+  terminam com <path>.gif</path>, <path>.jpg</path> ou <path>.png</path>.
+  Uma expressão regular deve ser precedida por <literal>~</literal>.
+  As requisições correspondentes serão mapeadas para o diretório
+  <path>/data/images</path>.
+</para>
+
+<para>
+  Quando o NGINX seleciona um bloco <literal>location</literal> para atender a
+  uma requisição, ele primeiro verifica as diretivas
+  <link doc="http/ngx_http_core_module.xml" id="location"/> que especificam
+  prefixos, lembrando-se do bloco <literal>location</literal> com o prefixo mais
+  longo e, em seguida, verifica as expressões regulares.
+  Se houver uma correspondência com uma expressão regular, o NGINX escolhe esse
+  bloco <literal>location</literal>; caso contrário, ele escolhe o bloco
+  lembrado anteriormente.
+</para>
+
+<para>
+  A configuração resultante de um servidor proxy será semelhante a esta:
+  <programlisting>
+  server {
+      location / {
+          proxy_pass http://localhost:8080/;
+      }
+
+      location ~ \.(gif|jpg|png)$ {
+          root /data/images;
+      }
+  }
 </programlisting>
-This will set up a server that will route all requests except for
-requests for static images to the proxied server operating on
-<literal>localhost:9000</literal> through the FastCGI protocol.
+  Este servidor filtrará as requisições que terminam com <path>.gif</path>,
+  <path>.jpg</path> ou <path>.png</path> e as mapeará para o diretório
+  <path>/data/images</path> (adicionando o URI ao parâmetro da diretiva
+  <literal>root</literal>) e passará todas as outras requisições para o servidor
+  proxy configurado acima.
+</para>
+
+<para>
+  Para aplicar a nova configuração, envie o sinal <literal>reload</literal> para
+  o NGINX, conforme descrito nas seções anteriores.
+</para>
+
+<para>
+  Existem muito <link doc="http/ngx_http_proxy_module.xml">mais</link> diretivas
+  que podem ser usadas para configurar ainda mais uma conexão proxy.
+</para>
+
+</section>
+
+
+<section id="fastcgi" name="Configurando o proxy FastCGI">
+
+<para>
+  O NGINX pode ser usado para rotear requisições para servidores FastCGI que
+  executam aplicações criadas com diversos frameworks e linguagens de
+  programação, como PHP.
+</para>
+
+<para>
+  A configuração mais básica do NGINX para trabalhar com um servidor FastCGI
+  inclui o uso da diretiva
+  <link doc="http/ngx_http_fastcgi_module.xml" id="fastcgi_pass"/> em vez da
+  diretiva <literal>proxy_pass</literal>, e das diretivas
+  <link doc="http/ngx_http_fastcgi_module.xml" id="fastcgi_param"/> para definir
+  os parâmetros passados para um servidor FastCGI.
+  Suponha que o servidor FastCGI esteja acessível em
+  <literal>localhost:9000</literal>.
+  Tomando como base a configuração de proxy da seção anterior, substitua a
+  diretiva <literal>proxy_pass</literal> pela diretiva
+  <literal>fastcgi_pass</literal> e altere o parâmetro para
+  <literal>localhost:9000</literal>.
+  No PHP, o parâmetro <literal>SCRIPT_FILENAME</literal> é usado para determinar
+  o nome do script e o parâmetro <literal>QUERY_STRING</literal> é usado para
+  passar parâmetros de requisição.
+  A configuração resultante seria:
+  <programlisting>
+  server {
+      location / {
+          fastcgi_pass  localhost:9000;
+          fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+          fastcgi_param QUERY_STRING    $query_string;
+      }
+
+      location ~ \.(gif|jpg|png)$ {
+          root /data/images;
+      }
+  }
+  </programlisting>
+  Isso configurará um servidor que encaminhará todas as requisições, exceto as
+  requisições de imagens estáticas, para o servidor delegado operando em
+  <literal>localhost:9000</literal> através do protocolo FastCGI.
 </para>
 
 </section>
