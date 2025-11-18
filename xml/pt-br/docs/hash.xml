@@ -22,7 +22,7 @@ status: ready
 
 <para>
   Para processar rapidamente conjuntos de dados estáticos, como nomes de
-  servidores, valores de diretivas
+  servidores, valores da diretiva
   <link doc="http/ngx_http_map_module.xml" id="map"/>, tipos MIME e nomes de
   strings de cabeçalho de requisição, o NGINX usa tabelas de hash.
   Durante a inicialização e cada reconfiguração, o NGINX seleciona os tamanhos
