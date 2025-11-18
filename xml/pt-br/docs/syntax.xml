@@ -1,80 +1,88 @@
 <!--
-  Copyright (C) Igor Sysoev
-  Copyright (C) Nginx, Inc.
-  -->
+Copyright (c) Igor Sysoev.
+Copyright (c) Nginx, Inc.
+
+Documentation licensed under the BSD 2-Clause License.
+The original work was translated from English into Brazilian Portuguese.
+https://github.com/nginx/nginx.org/blob/-/text/LICENSE
+
+source_url: https://github.com/nginx/nginx.org/blob/main/xml/en/docs/syntax.xml
+revision: 81c270870cd6cc695168bb64d397c31d5d38f3b1
+status: ready
+-->
 
 <!DOCTYPE article SYSTEM "../../../dtd/article.dtd">
 
-<article name="Configuration file measurement units"
-         link="/en/docs/syntax.html"
-         lang="en"
+<article name="Unidades de medida do arquivo de configuração"
+         link="/pt-br/docs/syntax.html"
+         lang="pt-br"
          rev="4">
 
 <section id="summary">
 
 <para>
-nginx supports several measurement units for specifying
-sizes, offsets, and time intervals within configuration files.
+  O NGINX suporta diversas unidades de medida para especificar tamanhos,
+  deslocamentos e intervalos de tempo em arquivos de configuração.
 </para>
 
 </section>
 
 
-<section id="size" name="Sizes and offsets">
+<section id="size" name="Tamanhos e deslocamentos">
 
 <para>
-Sizes can be specified in bytes, kilobytes, or megabytes
-using the following suffixes:
+  Os tamanhos podem ser especificados em bytes, kilobytes ou megabytes usando os
+  seguintes sufixos:
 
-<list type="bullet">
+  <list type="bullet">
 
-<listitem>
-<literal>k</literal> and <literal>K</literal> for kilobytes
-</listitem>
+  <listitem>
+    <literal>k</literal> e <literal>K</literal> para kilobytes;
+  </listitem>
 
-<listitem>
-<literal>m</literal> and <literal>M</literal> for megabytes
-</listitem>
+  <listitem>
+    <literal>m</literal> e <literal>M</literal> para megabytes.
+  </listitem>
 
-</list>
+  </list>
 </para>
 
 <para>
-For example,
-“<literal>1024</literal>”, “<literal>8k</literal>”, “<literal>1m</literal>”.
+  Por exemplo, "<literal>1024</literal>", "<literal>8k</literal>",
+  "<literal>1m</literal>".
 </para>
 
 <para>
-Offsets can be also specified in gigabytes using the
-<literal>g</literal> or <literal>G</literal> suffixes.
+  Os deslocamentos também podem ser especificados em gigabytes usando os sufixos
+  <literal>g</literal> ou <literal>G</literal>.
 </para>
 
 </section>
 
 
-<section id="time" name="Time intervals">
+<section id="time" name="Intervalos de tempo">
 
 <para>
-Time intervals can be specified in milliseconds, seconds,
-minutes, hours, days and so on, using the following suffixes:
-<table width="30%">
-<tr><td width="20%">ms</td><td>milliseconds</td></tr>
-<tr><td width="20%">s</td><td>seconds (default)</td></tr>
-<tr><td width="20%">m</td><td>minutes</td></tr>
-<tr><td width="20%">h</td><td>hours</td></tr>
-<tr><td width="20%">d</td><td>days</td></tr>
-<tr><td width="20%">w</td><td>weeks</td></tr>
-<tr><td width="20%">M</td><td>months, 30 days</td></tr>
-<tr><td width="20%">y</td><td>years, 365 days</td></tr>
-</table>
+  Os intervalos de tempo podem ser especificados em milissegundos, segundos,
+  minutos, horas, dias e assim por diante, usando os seguintes sufixos:
+  <table width="30%">
+    <tr><td width="20%">ms</td><td>milissegundos</td></tr>
+    <tr><td width="20%">s</td><td>segundos (padrão)</td></tr>
+    <tr><td width="20%">m</td><td>minutos</td></tr>
+    <tr><td width="20%">h</td><td>horas</td></tr>
+    <tr><td width="20%">d</td><td>dias</td></tr>
+    <tr><td width="20%">w</td><td>semanas</td></tr>
+    <tr><td width="20%">M</td><td>meses, 30 dias</td></tr>
+    <tr><td width="20%">a</td><td>anos, 365 dias</td></tr>
+  </table>
 </para>
 
 <para>
-Multiple units can be combined in a single value
-by specifying them in the order from the most to the least significant,
-and optionally separated by whitespace.
-For example, “<literal>1h 30m</literal>” specifies the same time
-as “<literal>90m</literal>” or “<literal>5400s</literal>”.
+  Múltiplas unidades podem ser combinadas em um único valor especificando-as na
+  ordem da mais significativa para a menos significativa, e opcionalmente
+  separadas por espaços em branco.
+  Por exemplo, "<literal>1h 30m</literal>" especifica o mesmo tempo que
+  "<literal>90m</literal>" ou "<literal>5400s</literal>".
 </para>
 
 <para>
@@ -82,19 +90,20 @@ as “<literal>90m</literal>” or “<literal>5400s</literal>”.
 
 <listitem>
 <para>
-A value without a suffix means seconds.
+  Um valor sem sufixo significa segundos.
 </para>
 </listitem>
 
 <listitem>
 <para>
-It is recommended to always specify a suffix.
+  Recomenda-se sempre especificar um sufixo.
 </para>
 </listitem>
 
 <listitem>
 <para>
-Certain time intervals can be specified only with a seconds resolution.
+  Certos intervalos de tempo podem ser especificados apenas com resolução em
+  segundos.
 </para>
 </listitem>
 
