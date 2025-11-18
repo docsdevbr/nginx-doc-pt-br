@@ -1,93 +1,99 @@
 <!--
-  Copyright (C) Igor Sysoev
-  Copyright (C) Nginx, Inc.
-  -->
+Copyright (c) Igor Sysoev.
+Copyright (c) Nginx, Inc.
+
+Documentation licensed under the BSD 2-Clause License.
+The original work was translated from English into Brazilian Portuguese.
+https://github.com/nginx/nginx.org/blob/-/text/LICENSE
+
+source_url: https://github.com/nginx/nginx.org/blob/main/xml/en/docs/events.xml
+revision: 01a366b5881410dfac78050536fe42a52eae9fff
+status: ready
+-->
 
 <!DOCTYPE article SYSTEM "../../../dtd/article.dtd">
 
-<article name="Connection processing methods"
-         link="/en/docs/events.html"
-         lang="en"
+<article name="Métodos de processamento de conexão"
+         link="/pt-br/docs/events.html"
+         lang="pt-br"
          rev="6">
 
 <section>
 
 <para>
-nginx supports a variety of connection processing methods.
-The availability of a particular method depends on the platform used.
-On platforms that support several methods nginx will normally
-select the most efficient method automatically.
-However, if needed, a connection processing method can be selected
-explicitly with the
-<link doc="ngx_core_module.xml" id="use"/> directive.
+  O NGINX suporta uma variedade de métodos de processamento de conexões.
+  A disponibilidade de um método específico depende da plataforma utilizada.
+  Em plataformas que suportam vários métodos, o NGINX normalmente selecionará o
+  método mais eficiente automaticamente.
+  No entanto, se necessário, um método de processamento de conexão pode ser
+  selecionado explicitamente com a diretiva
+  <link doc="ngx_core_module.xml" id="use"/>.
 </para>
 
 <para>
-The following connection processing methods are supported:
-<list type="bullet">
+  Os seguintes métodos de processamento de conexão são suportados:
+  <list type="bullet">
 
-<listitem id="select">
-<para>
-<literal>select</literal>&mdash;standard method.
-The supporting module is built automatically on platforms that lack
-more efficient methods.
-The <literal>--with-select_module</literal> and
-<literal>--without-select_module</literal> configuration parameters
-can be used to forcibly enable or disable the build of this module.
-</para>
-</listitem>
+  <listitem id="select">
+  <para>
+    <literal>select</literal> &mdash; método padrão.
+    O módulo de suporte é compilado automaticamente em plataformas que não
+    possuem métodos mais eficientes.
+    Os parâmetros de configuração <literal>--with-select_module</literal> e
+    <literal>--without-select_module</literal> podem ser usados para habilitar
+    ou desabilitar a compilação deste módulo.
+  </para>
+  </listitem>
 
-<listitem id="poll">
-<para>
-<literal>poll</literal>&mdash;standard method.
-The supporting module is built automatically on platforms that lack
-more efficient methods.
-The <literal>--with-poll_module</literal> and
-<literal>--without-poll_module</literal> configuration parameters
-can be used to forcibly enable or disable the build of this module.
-</para>
-</listitem>
+  <listitem id="poll">
+  <para>
+    <literal>poll</literal> &mdash; método padrão.
+    O módulo de suporte é compilado automaticamente em plataformas que não
+    possuem métodos mais eficientes.
+    Os parâmetros de configuração <literal>--with-poll_module</literal> e
+    <literal>--without-poll_module</literal> podem ser usados para habilitar ou
+    desabilitar a compilação deste módulo.
+  </para>
+  </listitem>
 
-<listitem id="kqueue">
-<para>
-<literal>kqueue</literal>&mdash;efficient method used on
-FreeBSD 4.1+, OpenBSD 2.9+, NetBSD 2.0, and macOS.
-</para>
-</listitem>
+  <listitem id="kqueue">
+  <para>
+    <literal>kqueue</literal> &mdash; método eficiente usado no FreeBSD 4.1+,
+    OpenBSD 2.9+, NetBSD 2.0 e macOS.
+  </para>
+  </listitem>
 
-<listitem id="epoll">
-<para>
-<literal>epoll</literal>&mdash;efficient method used on
-Linux 2.6+.
-<note>
-The <literal>EPOLLRDHUP</literal> (Linux 2.6.17, glibc 2.8)
-and <literal>EPOLLEXCLUSIVE</literal> (Linux 4.5, glibc 2.24)
-flags are supported since 1.11.3.
-</note>
-<note>
-Some older distributions like SuSE 8.2 provide patches
-that add epoll support to 2.4 kernels.
-</note>
-</para>
-</listitem>
+  <listitem id="epoll">
+  <para>
+    <literal>epoll</literal> &mdash; método eficiente usado no Linux 2.6+.
+    <note>
+      Os parâmetros <literal>EPOLLRDHUP</literal> (Linux 2.6.17, glibc 2.8) e
+      <literal>EPOLLEXCLUSIVE</literal> (Linux 4.5, glibc 2.24) são suportados
+      desde a versão 1.11.3.
+    </note>
+    <note>
+      Algumas distribuições mais antigas, como o SuSE 8.2, fornecem patches que
+      adicionam suporte ao epoll em kernels 2.4.
+    </note>
+  </para>
+  </listitem>
 
-<listitem id="devpoll">
-<para>
-<literal>/dev/poll</literal>&mdash;efficient method used on
-Solaris 7 11/99+, HP/UX 11.22+ (eventport), IRIX 6.5.15+,
-and Tru64 UNIX 5.1A+.
-</para>
-</listitem>
+  <listitem id="devpoll">
+  <para>
+    <literal>/dev/poll</literal> &mdash; método eficiente usado no Solaris 7
+    11/99+, HP/UX 11.22+ (eventport), IRIX 6.5.15+ e Tru64 UNIX 5.1A+.
+  </para>
+  </listitem>
 
-<listitem id="eventport">
-<para>
-<literal>eventport</literal>&mdash;event ports, method
-used on Solaris 10+ (due to known issues,
-it is recommended using the <literal>/dev/poll</literal> method instead).
-</para>
-</listitem>
+  <listitem id="eventport">
+  <para>
+    <literal>eventport</literal> &mdash; event ports, método usado no Solaris
+    10+ (devido a problemas conhecidos, é recomendado usar o método
+    <literal>/dev/poll</literal> em vez disso).
+  </para>
+  </listitem>
 
-</list>
+  </list>
 </para>
 
 </section>

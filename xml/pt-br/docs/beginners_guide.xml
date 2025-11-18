@@ -68,16 +68,16 @@ status: ready
   Onde <i>sinal</i> pode ser um dos seguintes:
   <list type="bullet">
   <listitem>
-  <literal>stop</literal>&mdash;desligamento rápido
+  <literal>stop</literal> &mdash; desligamento rápido
   </listitem>
   <listitem>
-  <literal>quit</literal>&mdash;desligamento normal
+  <literal>quit</literal> &mdash; desligamento normal
   </listitem>
   <listitem>
-  <literal>reload</literal>&mdash;recarregar o arquivo de configuração
+  <literal>reload</literal> &mdash; recarregar o arquivo de configuração
   </listitem>
   <listitem>
-  <literal>reopen</literal>&mdash;reabrir os arquivos de log
+  <literal>reopen</literal> &mdash; reabrir os arquivos de log
   </listitem>
   </list>
   Por exemplo, para interromper os processos do NGINX aguardando que os
