@@ -68,10 +68,10 @@ status: ready
   Onde <i>sinal</i> pode ser um dos seguintes:
   <list type="bullet">
   <listitem>
-  <literal>stop</literal> &mdash; desligamento rápido
+  <literal>stop</literal> &mdash; encerramento rápido
   </listitem>
   <listitem>
-  <literal>quit</literal> &mdash; desligamento normal
+  <literal>quit</literal> &mdash; encerramento normal
   </listitem>
   <listitem>
   <literal>reload</literal> &mdash; recarregar o arquivo de configuração
@@ -124,7 +124,7 @@ status: ready
   <path>nginx.pid</path> no diretório <path>/usr/local/nginx/logs</path> ou
   <path>/var/run</path>.
   Por exemplo, se o ID do processo principal for 1628, para enviar o sinal QUIT
-  resultando no desligamento normal do NGINX, execute:
+  resultando no encerramento normal do NGINX, execute:
   <programlisting>
   kill -s QUIT 1628
   </programlisting>

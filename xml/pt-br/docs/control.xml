@@ -31,15 +31,15 @@ status: ready
 <note>
 <table>
 
-<tr><td width="20%">TERM, INT</td><td>desligamento rápido</td></tr>
-<tr><td width="20%">QUIT</td><td>desligamento normal</td></tr>
+<tr><td width="20%">TERM, INT</td><td>encerramento rápido</td></tr>
+<tr><td width="20%">QUIT</td><td>encerramento normal</td></tr>
 <tr><td width="20%">HUP</td><td>alteração de configuração, acompanhamento de
   fuso horário alterado (somente para FreeBSD e Linux), início de novos
-  processos worker com uma nova configuração, desligamento normal de processos
+  processos worker com uma nova configuração, encerramento normal de processos
   worker antigos</td></tr>
 <tr><td width="20%">USR1</td><td>reabertura de arquivos de log</td></tr>
 <tr><td width="20%">USR2</td><td>atualização de um arquivo executável</td></tr>
-<tr><td width="20%">WINCH</td><td>desligamento normal de processos worker</td></tr>
+<tr><td width="20%">WINCH</td><td>encerramento normal de processos worker</td></tr>
 
 </table>
 </note>
@@ -52,8 +52,8 @@ status: ready
 <note>
 <table>
 
-<tr><td width="20%">TERM, INT</td><td>desligamento rápido</td></tr>
-<tr><td width="20%">QUIT</td><td>desligamento normal</td></tr>
+<tr><td width="20%">TERM, INT</td><td>encerramento rápido</td></tr>
+<tr><td width="20%">QUIT</td><td>encerramento normal</td></tr>
 <tr><td width="20%">USR1</td><td>reabertura de arquivos de log</td></tr>
 <tr><td width="20%">WINCH</td><td>encerramento anormal para depuração
 (requer que a diretiva <link doc="ngx_core_module.xml" id="debug_points"/>
@@ -186,7 +186,7 @@ status: ready
   Depois disso, todos os processos worker (antigos e novos) continuam a aceitar
   requisições.
   Se o sinal WINCH for enviado ao primeiro processo principal, ele enviará
-  mensagens aos seus processos worker, solicitando que eles se desliguem
+  mensagens aos seus processos worker, solicitando que eles sejam encerrados
   normalmente, e eles começarão a encerrar:
   <programlisting>
     PID  PPID USER    %CPU   VSZ WCHAN  COMMAND

@@ -1,101 +1,110 @@
 <!--
-  Copyright (C) Igor Sysoev
-  Copyright (C) Nginx, Inc.
-  -->
+Copyright (c) Igor Sysoev.
+Copyright (c) Nginx, Inc.
+
+Documentation licensed under the BSD 2-Clause License.
+The original work was translated from English into Brazilian Portuguese.
+https://github.com/nginx/nginx.org/blob/-/text/LICENSE
+
+source_url: https://github.com/nginx/nginx.org/blob/main/xml/en/docs/switches.xml
+revision: 3da00e2800658b4e72697f30d5959f273d867da5
+status: ready
+-->
 
 <!DOCTYPE article SYSTEM "../../../dtd/article.dtd">
 
-<article name="Command-line parameters"
-         link="/en/docs/switches.html"
-         lang="en"
+<article name="Parâmetros da linha de comando"
+         link="/pt-br/docs/switches.html"
+         lang="pt-br"
          rev="4">
 
 <section>
 
 <para>
-nginx supports the following command-line parameters:
-<list type="bullet">
+  O NGINX suporta os seguintes parâmetros de linha de comando:
+  <list type="bullet">
 
-<listitem>
-<literal>-?</literal> | <literal>-h</literal>&mdash;print help
-for command-line parameters.
-</listitem>
+  <listitem>
+    <literal>-?</literal> | <literal>-h</literal> &mdash; exibe ajuda para
+    parâmetros da linha de comando.
+  </listitem>
 
-<listitem>
-<literal>-c <value>file</value></literal>&mdash;use an alternative
-configuration <value>file</value> instead of a default file.
-</listitem>
+  <listitem>
+    <literal>-c <value>arquivo</value></literal> &mdash; usa um arquivo de
+    configuração alternativo <value>arquivo</value> em vez de um arquivo padrão.
+  </listitem>
 
-<listitem>
-<literal>-e <value>file</value></literal>&mdash;use an alternative
-error log <value>file</value> to store the log
-instead of a default file (1.19.5).
-The special value <literal>stderr</literal> selects the standard error file.
-</listitem>
+  <listitem>
+    <literal>-e <value>arquivo</value></literal> &mdash; usa um arquivo de log
+    de erros alternativo <value>arquivo</value> para armazenar o log em vez de
+    um arquivo padrão (1.19.5).
+    O valor especial <literal>stderr</literal> seleciona o arquivo de erro
+    padrão.
+  </listitem>
 
-<listitem>
-<literal>-g <value>directives</value></literal>&mdash;set
-<link doc="ngx_core_module.xml">global configuration directives</link>,
-for example,
-<programlisting>
-nginx -g "pid /var/run/nginx.pid; worker_processes `sysctl -n hw.ncpu`;"
-</programlisting>
-</listitem>
+  <listitem>
+    <literal>-g <value>diretivas</value></literal> &mdash; define
+    <link doc="ngx_core_module.xml">diretivas de configuração global</link>,
+    por exemplo,
+    <programlisting>
+    nginx -g "pid /var/run/nginx.pid; worker_processes `sysctl -n hw.ncpu`;"
+    </programlisting>
+  </listitem>
 
-<listitem>
-<literal>-p <value>prefix</value></literal>&mdash;set nginx path prefix,
-i.e. a directory that will keep server files
-(default value is <value>/usr/local/nginx</value>).
-</listitem>
+  <listitem>
+    <literal>-p <value>prefixo</value></literal> &mdash; define o prefixo do
+    caminho do NGINX, ou seja, um diretório que armazenará os arquivos do
+    servidor (o valor padrão é <value>/usr/local/nginx</value>).
+  </listitem>
 
-<listitem>
-<literal>-q</literal>&mdash;suppress non-error messages
-during configuration testing.
-</listitem>
+  <listitem>
+    <literal>-q</literal> &mdash; suprime mensagens que não sejam de erro
+    durante os testes de configuração.
+  </listitem>
 
-<listitem>
-<literal>-s <value>signal</value></literal>&mdash;send a <i>signal</i>
-to the master process.
-The argument <i>signal</i> can be one of:
-<list type="bullet">
-<listitem>
-<literal>stop</literal>&mdash;shut down quickly
-</listitem>
-<listitem>
-<literal>quit</literal>&mdash;shut down gracefully
-</listitem>
-<listitem>
-<literal>reload</literal>&mdash;reload configuration,
-start the new worker process with a new configuration,
-gracefully shut down old worker processes.
-</listitem>
-<listitem>
-<literal>reopen</literal>&mdash;reopen log files
-</listitem>
-</list>
-</listitem>
+  <listitem>
+    <literal>-s <value>sinal</value></literal> &mdash; envia um <i>sinal</i>
+    para o processo mestre.
+    O argumento <i>sinal</i> pode ser um dos seguintes:
+    <list type="bullet">
+    <listitem>
+      <literal>stop</literal> &mdash; encerrar rapidamente;
+    </listitem>
+    <listitem>
+      <literal>quit</literal> &mdash; encerrar normalmente;
+    </listitem>
+    <listitem>
+      <literal>reload</literal> &mdash; recarregar a configuração, iniciar um
+      novo processo de trabalho com uma nova configuração, encerrar normalmente
+      os processos de trabalho antigos;
+    </listitem>
+    <listitem>
+    <literal>reopen</literal> &mdash; reabrir os arquivos de log.
+    </listitem>
+    </list>
+  </listitem>
 
-<listitem>
-<literal>-t</literal>&mdash;test the configuration file: nginx checks the
-configuration for correct syntax, and then tries to open files
-referred in the configuration.
-</listitem>
+  <listitem>
+    <literal>-t</literal> &mdash; testa o arquivo de configuração: o NGINX
+    verifica a configuração em busca da sintaxe correta e, em seguida, tenta
+    abrir os arquivos referenciados na configuração;
+  </listitem>
 
-<listitem>
-<literal>-T</literal>&mdash;same as <literal>-t</literal>,
-but additionally dump configuration files to standard output (1.9.2).
-</listitem>
+  <listitem>
+    <literal>-T</literal> &mdash; o mesmo que <literal>-t</literal>, mas,
+    adicionalmente, exibe os arquivos de configuração na saída padrão (1.9.2);
+  </listitem>
 
-<listitem>
-<literal>-v</literal>&mdash;print nginx version.
-</listitem>
+  <listitem>
+    <literal>-v</literal> &mdash; imprime a versão do nginx;
+  </listitem>
 
-<listitem>
-<literal>-V</literal>&mdash;print nginx version, compiler version,
-and configure parameters.
-</listitem>
+  <listitem>
+    <literal>-V</literal> &mdash; imprime a versão do NGINX, a versão do
+    compilador e os parâmetros de configuração.
+  </listitem>
 
-</list>
+  </list>
 </para>
 
 </section>
