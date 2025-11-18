@@ -43,7 +43,7 @@ status: ready
 
   <tag-name><literal>facility=</literal><value>string</value></tag-name>
   <tag-desc>
-    Define a facility de mensagens syslog, conforme definido na
+    Define a facility das mensagens do syslog, conforme definido na
     <link url="https://datatracker.ietf.org/doc/html/rfc3164#section-4.1.1">RFC 3164</link>.
     Facility pode ser uma das seguintes: "<literal>kern</literal>",
     "<literal>user</literal>", "<literal>mail</literal>",
@@ -60,7 +60,7 @@ status: ready
 
   <tag-name><literal>severity=</literal><value>string</value></tag-name>
   <tag-desc>
-    Define a severidade das mensagens syslog para
+    Define a severidade das mensagens do syslog para
     <link doc="http/ngx_http_log_module.xml" id="access_log"/>,
     conforme definido na
     <link url="https://datatracker.ietf.org/doc/html/rfc3164#section-4.1.1">RFC 3164</link>.
@@ -81,7 +81,7 @@ status: ready
 
   <tag-name><literal>nohostname</literal></tag-name>
   <tag-desc>
-    Desativa a adição do campo "hostname" ao cabeçalho da mensagem syslog
+    Desativa a adição do campo "hostname" ao cabeçalho da mensagem do syslog
     (1.9.7).
   </tag-desc>
 
@@ -89,7 +89,7 @@ status: ready
   <tag-name><literal>bare=</literal><literal>on</literal> |
   <literal>off</literal></tag-name>
   <tag-desc>
-    Se ativado, as mensagens são enviadas sem cabeçalhos syslog.
+    Se ativado, as mensagens são enviadas sem cabeçalhos do syslog.
     O padrão é <literal>off</literal>.
   </tag-desc>
   -->
