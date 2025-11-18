@@ -1,104 +1,115 @@
 <?xml version="1.0"?>
 
 <!--
-  Copyright (C) Nginx, Inc.
-  -->
+Copyright (c) Nginx, Inc.
+
+Documentation licensed under the BSD 2-Clause License.
+The original work was translated from English into Brazilian Portuguese.
+https://github.com/nginx/nginx.org/blob/-/text/LICENSE
+
+source_url: https://github.com/nginx/nginx.org/blob/main/xml/en/docs/debugging_log.xml
+revision: 66114e678f96178dfb2129b199fd2b7d6d8b15a2
+status: ready
+-->
 
 <!DOCTYPE article SYSTEM "../../../dtd/article.dtd">
 
-<article name="Logging to syslog"
-         link="/en/docs/syslog.html"
-         lang="en"
+<article name="Registrando logs no syslog"
+         link="/pt-br/docs/syslog.html"
+         lang="pt-br"
          rev="6">
 
 <section>
 
 <para>
-The
-<link doc="ngx_core_module.xml" id="error_log"/>
-and
-<link doc="http/ngx_http_log_module.xml" id="access_log"/>
-directives support logging to syslog.
-The following parameters configure logging to syslog:
-<list type="tag">
+  As diretivas
+  <link doc="ngx_core_module.xml" id="error_log"/>
+  e
+  <link doc="http/ngx_http_log_module.xml" id="access_log"/>
+  permitem o registro no syslog.
+  Os seguintes parâmetros configuram o log no syslog:
+  <list type="tag">
 
-<tag-name><literal>server=</literal><value>address</value></tag-name>
-<tag-desc>
-Defines the address of a syslog server.
-The address can be specified as a domain name or IP address,
-with an optional port, or as a UNIX-domain socket path
-specified after the “<literal>unix:</literal>” prefix.
-If port is not specified, the UDP port 514 is used.
-If a domain name resolves to several IP addresses, the first resolved
-address is used.
-</tag-desc>
+  <tag-name><literal>server=</literal><value>endereço</value></tag-name>
+  <tag-desc>
+    Define o endereço de um servidor syslog.
+    O endereço pode ser especificado como um nome de domínio ou endereço IP, com
+    uma porta opcional, ou como um caminho de socket de domínio UNIX
+    especificado após o prefixo "<literal>unix:</literal>".
+    Se a porta não for especificada, a porta UDP 514 será usada.
+    Se um nome de domínio for resolvido para vários endereços IP, o primeiro
+    endereço resolvido será usado.
+  </tag-desc>
 
-<tag-name><literal>facility=</literal><value>string</value></tag-name>
-<tag-desc>
-Sets facility of syslog messages, as defined in
-<link url="https://datatracker.ietf.org/doc/html/rfc3164#section-4.1.1">RFC 3164</link>.
-Facility can be one of “<literal>kern</literal>”, “<literal>user</literal>”,
-“<literal>mail</literal>”, “<literal>daemon</literal>”,
-“<literal>auth</literal>”, “<literal>intern</literal>”,
-“<literal>lpr</literal>”, “<literal>news</literal>”, “<literal>uucp</literal>”,
-“<literal>clock</literal>”, “<literal>authpriv</literal>”,
-“<literal>ftp</literal>”, “<literal>ntp</literal>”, “<literal>audit</literal>”,
-“<literal>alert</literal>”, “<literal>cron</literal>”,
-“<literal>local0</literal>”..“<literal>local7</literal>”.
-Default is “<literal>local7</literal>”.
-</tag-desc>
+  <tag-name><literal>facility=</literal><value>string</value></tag-name>
+  <tag-desc>
+    Define a facility de mensagens syslog, conforme definido na
+    <link url="https://datatracker.ietf.org/doc/html/rfc3164#section-4.1.1">RFC 3164</link>.
+    Facility pode ser uma das seguintes: "<literal>kern</literal>",
+    "<literal>user</literal>", "<literal>mail</literal>",
+    "<literal>daemon</literal>", "<literal>auth</literal>",
+    "<literal>intern</literal>", "<literal>lpr</literal>",
+    "<literal>news</literal>", "<literal>uucp</literal>",
+    "<literal>clock</literal>", "<literal>authpriv</literal>",
+    "<literal>ftp</literal>", "<literal>ntp</literal>",
+    "<literal>audit</literal>", "<literal>alert</literal>",
+    "<literal>cron</literal>",
+    "<literal>local0</literal>".."<literal>local7</literal>".
+    O valor padrão é "<literal>local7</literal>".
+  </tag-desc>
 
-<tag-name><literal>severity=</literal><value>string</value></tag-name>
-<tag-desc>
-Sets severity of syslog messages for
-<link doc="http/ngx_http_log_module.xml" id="access_log"/>,
-as defined in
-<link url="https://datatracker.ietf.org/doc/html/rfc3164#section-4.1.1">RFC 3164</link>.
-Possible values are the same as for the second parameter (level) of the
-<link doc="ngx_core_module.xml" id="error_log"/> directive.
-Default is “<literal>info</literal>”.
-<note>
-Severity of error messages is determined by nginx, thus the parameter
-is ignored in the <literal>error_log</literal> directive.
-</note>
-</tag-desc>
+  <tag-name><literal>severity=</literal><value>string</value></tag-name>
+  <tag-desc>
+    Define a severidade das mensagens syslog para
+    <link doc="http/ngx_http_log_module.xml" id="access_log"/>,
+    conforme definido na
+    <link url="https://datatracker.ietf.org/doc/html/rfc3164#section-4.1.1">RFC 3164</link>.
+    Os valores possíveis são os mesmos do segundo parâmetro (level) da diretiva
+    <link doc="ngx_core_module.xml" id="error_log"/>.
+    O padrão é "<literal>info</literal>".
+    <note>
+      A severidade das mensagens de erro é determinada pelo NGINX; portanto, o
+      parâmetro é ignorado na diretiva <literal>error_log</literal>.
+    </note>
+  </tag-desc>
 
-<tag-name><literal>tag=</literal><value>string</value></tag-name>
-<tag-desc>
-Sets the tag of syslog messages.
-Default is “<literal>nginx</literal>”.
-</tag-desc>
+  <tag-name><literal>tag=</literal><value>string</value></tag-name>
+  <tag-desc>
+    Define a tag das mensagens do syslog.
+    O padrão é "<literal>nginx</literal>".
+  </tag-desc>
 
-<tag-name><literal>nohostname</literal></tag-name>
-<tag-desc>
-Disables adding the “hostname” field into the syslog message header (1.9.7).
-</tag-desc>
+  <tag-name><literal>nohostname</literal></tag-name>
+  <tag-desc>
+    Desativa a adição do campo "hostname" ao cabeçalho da mensagem syslog
+    (1.9.7).
+  </tag-desc>
 
-<!--
-<tag-name><literal>bare=</literal><literal>on</literal> |
-<literal>off</literal></tag-name>
-<tag-desc>
-If enabled, messages are sent without syslog headers.
-Default is <literal>off</literal>.
-</tag-desc>
--->
+  <!--
+  <tag-name><literal>bare=</literal><literal>on</literal> |
+  <literal>off</literal></tag-name>
+  <tag-desc>
+    Se ativado, as mensagens são enviadas sem cabeçalhos syslog.
+    O padrão é <literal>off</literal>.
+  </tag-desc>
+  -->
 
-</list>
-Example syslog configuration:
-<example>
-error_log syslog:server=192.168.1.1 debug;
+  </list>
+  Exemplo de configuração do syslog:
+  <example>
+  error_log syslog:server=192.168.1.1 debug;
 
-access_log syslog:server=unix:/var/log/nginx.sock,nohostname;
-access_log syslog:server=[2001:db8::1]:12345,facility=local7,tag=nginx,severity=info combined;
-</example>
+  access_log syslog:server=unix:/var/log/nginx.sock,nohostname;
+  access_log syslog:server=[2001:db8::1]:12345,facility=local7,tag=nginx,severity=info combined;
+  </example>
 </para>
 
 <para>
 <note>
-Logging to syslog is available since version 1.7.1.
-As part of our
-<commercial_version>commercial subscription</commercial_version>
-logging to syslog is available since version 1.5.3.
+  O registro de logs no syslog está disponível desde a versão 1.7.1.
+  Como parte de nossa
+  <commercial_version>assinatura comercial</commercial_version>
+  o registro de logs no syslog está disponível desde a versão 1.5.3.
 </note>
 </para>
 
