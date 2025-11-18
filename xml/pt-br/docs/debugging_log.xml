@@ -29,8 +29,8 @@ status: ready
   ./configure --with-debug ...
   </programlisting>
 
-  Em seguida, o nível de depuração (<literal>debug</literal>) deve ser definido
-  com a diretiva <link doc="ngx_core_module.xml" id="error_log"/>:
+  Em seguida, o nível <literal>debug</literal> deve ser definido com a diretiva
+  <link doc="ngx_core_module.xml" id="error_log"/>:
 
   <programlisting>
   error_log /path/to/log debug;
@@ -108,10 +108,10 @@ status: ready
 </section>
 
 
-<section id="memory" name="Registrando o log em um buffer de memória cíclico">
+<section id="memory" name="Registrando o log em um buffer de memória cíclica">
 
 <para>
-  O log de depuração pode ser gravado em um buffer de memória cíclico:
+  O log de depuração pode ser gravado em um buffer de memória cíclica:
   <programlisting>
   error_log memory:32m debug;
   </programlisting>
