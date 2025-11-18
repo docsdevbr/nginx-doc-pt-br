@@ -73,7 +73,7 @@ status: ready
     <tr><td width="20%">d</td><td>dias</td></tr>
     <tr><td width="20%">w</td><td>semanas</td></tr>
     <tr><td width="20%">M</td><td>meses, 30 dias</td></tr>
-    <tr><td width="20%">a</td><td>anos, 365 dias</td></tr>
+    <tr><td width="20%">y</td><td>anos, 365 dias</td></tr>
   </table>
 </para>
 
