@@ -1,47 +1,55 @@
 <!--
-  Copyright (C) Igor Sysoev
-  Copyright (C) Nginx, Inc.
-  -->
+Copyright (c) Igor Sysoev.
+Copyright (c) Nginx, Inc.
+
+Documentation licensed under the BSD 2-Clause License.
+The original work was translated from English into Brazilian Portuguese.
+https://github.com/nginx/nginx.org/blob/-/text/LICENSE
+
+source_url: https://github.com/nginx/nginx.org/blob/main/xml/en/docs/hash.xml
+revision: 19a602601062278af31da0839c467d042593b397
+status: ready
+-->
 
 <!DOCTYPE article SYSTEM "../../../dtd/article.dtd">
 
-<article name="Setting up hashes"
-         link="/en/docs/hash.html"
-         lang="en"
+<article name="Configurando hashes"
+         link="/pt-br/docs/hash.html"
+         lang="pt-br"
          rev="1">
 
 <section>
 
 <para>
-To quickly process static sets of data such as server names,
-<link doc="http/ngx_http_map_module.xml" id="map"/> directive’s values,
-MIME types, names of request header strings,
-nginx uses hash tables.
-During the start and each re-configuration nginx selects the
-minimum possible sizes of hash tables such that the bucket size
-that stores keys with identical hash values does not exceed the
-configured parameter (hash bucket size).
-The size of a table is expressed in buckets.
-The adjustment is continued until the table size exceeds the
-hash max size parameter.
-Most hashes have the corresponding directives that allow changing
-these parameters, for example, for the server names hash they are
-<link doc="http/ngx_http_core_module.xml" id="server_names_hash_max_size"/>
-and <link doc="http/ngx_http_core_module.xml" id="server_names_hash_bucket_size"/>.
+  Para processar rapidamente conjuntos de dados estáticos, como nomes de
+  servidores, valores de diretivas
+  <link doc="http/ngx_http_map_module.xml" id="map"/>, tipos MIME e nomes de
+  strings de cabeçalho de requisição, o NGINX usa tabelas de hash.
+  Durante a inicialização e cada reconfiguração, o NGINX seleciona os tamanhos
+  mínimos possíveis das tabelas de hash, de forma que o tamanho do bucket que
+  armazena chaves com valores de hash idênticos não exceda o parâmetro
+  configurado (tamanho do bucket de hash).
+  O tamanho de uma tabela é expresso em buckets.
+  O ajuste continua até que o tamanho da tabela exceda o parâmetro de tamanho
+  máximo do hash.
+  A maioria dos hashes possui as diretivas correspondentes que permitem alterar
+  esses parâmetros; por exemplo, para o hash de nomes de servidores, eles são:
+  <link doc="http/ngx_http_core_module.xml" id="server_names_hash_max_size"/> e
+  <link doc="http/ngx_http_core_module.xml" id="server_names_hash_bucket_size"/>.
 </para>
 
 <para>
-The hash bucket size parameter is aligned to the size that is a
-multiple of the processor’s cache line size.  This speeds up
-key search in a hash on modern processors by reducing the number
-of memory accesses.
-If hash bucket size is equal to one processor’s cache line size
-then the number of memory accesses during the key search will be
-two in the worst case&mdash;first to compute the bucket address,
-and second during the key search inside the bucket.
-Therefore, if nginx emits the message requesting to increase
-either hash max size or hash bucket size then the first parameter
-should first be increased.
+  O parâmetro de tamanho do bucket de hash é alinhado ao tamanho que é um
+  múltiplo do tamanho da linha de cache do processador.
+  Isso acelera a busca de chaves em um hash em processadores modernos, reduzindo
+  o número de acessos à memória.
+  Se o tamanho do bucket de hash for igual ao tamanho de uma linha de cache do
+  processador, então o número de acessos à memória durante a busca de chaves
+  será dois no pior caso &mdash; o primeiro para calcular o endereço do bucket,
+  e o segundo durante a busca de chaves dentro do bucket.
+  Portanto, se o NGINX emitir a mensagem solicitando o aumento do tamanho máximo
+  do hash ou do tamanho do bucket de hash, o primeiro parâmetro deverá ser
+  aumentado primeiro.
 </para>
 
 </section>

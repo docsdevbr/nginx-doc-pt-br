@@ -143,7 +143,7 @@ status: ready
 <section id="conf_structure" name="Estrutura do arquivo de configuração">
 
 <para>
-  O nginx consiste em módulos que são controlados por diretivas especificadas no
+  O NGINX consiste em módulos que são controlados por diretivas especificadas no
   arquivo de configuração.
   As diretivas são divididas em diretivas simples e diretivas de bloco.
   Uma diretiva simples consiste no nome e nos parâmetros separados por espaços e
